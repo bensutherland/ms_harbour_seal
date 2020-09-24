@@ -1,1 +1,84 @@
-# ms_harbour_seal
+# Harbour Seal Project - Population Genetics
+Manuscript analysis instruction guide and associated scripts for the Harbour Seal Population Genetics analysis. This pipeline is still in development stage, and comes with no guarantees.            
+Primarily uses the repo from E. Normandeau of Labo Bernatchez for genotyping https://github.com/enormandeau/stacks_workflow, which uses Stacks v2.0.       
+
+
+### Requirements    
+`cutadapt` https://cutadapt.readthedocs.io/en/stable/index.html    
+`fastqc` https://www.bioinformatics.babraham.ac.uk/projects/fastqc/   
+`multiqc` https://multiqc.info/   
+`bwa` http://bio-bwa.sourceforge.net/   
+`samtools (v.1.9)` http://www.htslib.org/    
+`stacks (v2.3e)` http://catchenlab.life.illinois.edu/stacks/     
+`fineRADstructure` http://cichlid.gurdon.cam.ac.uk/fineRADstructure.html     
+`ape` (install within R)     
+`stacks_workflow` https://github.com/enormandeau/stacks_workflow         
+
+## 1. Preparing Data
+### a. Set up 
+1. Put all raw data in `02-raw` using cp or cp -l    
+2. Prepare the sample info file (see template in repo sample_information.csv). Note: tab-delimited, even though name is .csv.    
+3. Download reference genome (oyster_v9): https://www.ncbi.nlm.nih.gov/assembly/GCF_000297895.1/      
+note: source citation is Zhang et al. 2012, Nature. https://www.ncbi.nlm.nih.gov/pubmed/22992520/       
+
+
+### b. Clean data
+View raw data with fastqc and multiqc:    
+#### FastQC raw data reads
+```
+mkdir 02-raw/fastqc_raw
+fastqc 02-raw/*.fastq.gz -o 02-raw/fastqc_raw/ -t 5
+multiqc -o 02-raw/fastqc_raw/ 02-raw/fastqc_raw
+```
+
+#### Prepare lane info
+```
+./00-scripts/00_prepare_lane_info.sh
+```
+
+#### Run cutadapt in order to trim off adapters, and remove any reads less than 50 bp
+```
+./00-scripts/01_cutadapt.sh 12
+```
+
+#### Demultiplex with two rxn enzymes in parallel over multiple CPUs
+```
+./00-scripts/02_process_radtags_2_enzymes_parallel.sh 80 nsiI mspI 14
+```
+
+#### Rename the files
+```
+./00-scripts/03_rename_samples.sh
+```
+
+#### FastQC de-multiplexed data
+```
+mkdir 04-all_samples/fastqc_demulti
+fastqc 04-all_samples/*.fq.gz -o 04-all_samples/fastqc_demulti/ -t 14
+multiqc -o 04-all_samples/fastqc_demulti/ 04-all_samples/fastqc_demulti
+```
+
+#### #TODO Here is where I will add some detail to remove low sequence samples ###
+#### #TODO First need to determine a threshold ###
+
+### c. Map reads against the reference genome
+#### Index the genome
+```
+# change directory into the genome folder, then
+bwa index -p GCA_004348235.1_GSC_HSeal_1.0_genomic ./GCA_004348235.1_GSC_HSeal_1.0_genomic.fna.gz
+```
+
+#### Align individual files against the genome
+#### Edit variables within the following script then launch:    
+```
+./00-scripts/bwa_mem_align_reads.sh 14
+```
+
+### d. Genotype
+#### Prepare and run gstacks
+```
+./00-scripts/04_prepare_population_map.sh
+./00-scripts/stacks2_gstacks_reference.sh
+# edit variables within the following script then run
+./00-scripts/stacks2_populations_reference.sh
+```
