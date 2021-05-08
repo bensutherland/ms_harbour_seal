@@ -14,6 +14,10 @@ Primarily uses the repo from E. Normandeau of Labo Bernatchez for genotyping htt
 `ape` (install within R)     
 `stacks_workflow` https://github.com/enormandeau/stacks_workflow         
 
+
+## 0. Obtain repo for analysis
+Clone https://github.com/enormandeau/stacks_workflow and change directory into the repo. All scripts will be run from here.   
+
 ## 1. Preparing Data
 ### a. Set up 
 1. Put all raw data in `02-raw` using cp or cp -l    
