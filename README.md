@@ -68,13 +68,16 @@ multiqc -o 04-all_samples/fastqc_demulti/ 04-all_samples/fastqc_demulti
 ### c. Map reads against the reference genome
 #### Index the genome
 ```
-# change directory into the genome folder, then
+# (Only needed once) Change directory into the genome folder and index the genome 
 bwa index -p GCA_004348235.1_GSC_HSeal_1.0_genomic ./GCA_004348235.1_GSC_HSeal_1.0_genomic.fna.gz
 ```
 
 #### Align individual files against the genome
 #### Edit variables within the following script then launch:    
 ```
+# First uptdate the following script to point towards the directory containing your genome
+
+# Launch
 ./00-scripts/bwa_mem_align_reads.sh 14
 ```
 
