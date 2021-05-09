@@ -75,7 +75,10 @@ bwa index -p GCA_004348235.1_GSC_HSeal_1.0_genomic ./GCA_004348235.1_GSC_HSeal_1
 #### Align individual files against the genome
 #### Edit variables within the following script then launch:    
 ```
-# First uptdate the following script to point towards the directory containing your genome
+# First uptdate the script below to point towards the directory containing your genome
+GENOMEFOLDER="/home/ben/Documents/genomes"
+GENOME="GCA_004348235.1_GSC_HSeal_1.0_genomic"
+# also uncomment the module loads
 
 # Launch
 ./00-scripts/bwa_mem_align_reads.sh 14
