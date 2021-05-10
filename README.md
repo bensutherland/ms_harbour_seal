@@ -94,10 +94,28 @@ GENOME="GCA_004348235.1_GSC_HSeal_1.0_genomic"
 # Only update the NUM_CPU variable and run
 ./00-scripts/stacks2_gstacks_reference.sh
 
-# Edit and run populations module
-# Variables to edit: -p (set to number of populations present, i.e., all), -r (set to 0.7), --min-maf 0.01 
-#    --ordered-export --genepop --radpainter
-# OR Variables to edit when getting fasta data: --write-single-snp --hwe --fasta-loc
+# Edit and run the ./00-scripts/stacks2_populations_reference.sh script
+#  for haplotypes:
+#populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
+#    -t "$NUM_CPU" -p 5 -r 0.7 \
+#    --renz nsiI --merge-sites \
+#    --min-maf 0.01 \
+#    --ordered-export --genepop \
+#    --radpainter
+
+# OR 
+
+# Edit and run populations module for single SNP and fasta export, and hwe
+#populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
+#    -t "$NUM_CPU" -p 5 -r 0.7 \
+#    --renz nsiI --merge-sites \
+#    --min-maf 0.01 \
+#    --ordered-export --genepop \
+#    # --radpainter
+#    --write-single-snp
+#    --hwe --fasta-loc \
+
+
 
 ./00-scripts/stacks2_populations_reference.sh
 ```
