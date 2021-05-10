@@ -87,8 +87,17 @@ GENOME="GCA_004348235.1_GSC_HSeal_1.0_genomic"
 ### d. Genotype
 #### Prepare and run gstacks
 ```
+# Prepare the population map
 ./00-scripts/04_prepare_population_map.sh
+
+# Edit and run gstacks
+# Only update the NUM_CPU variable and run
 ./00-scripts/stacks2_gstacks_reference.sh
-# edit variables within the following script then run
+
+# Edit and run populations module
+# Variables to edit: -p (set to number of populations present, i.e., all), -r (set to 0.7), --min-maf 0.01 
+#    --ordered-export --genepop --radpainter
+# OR Variables to edit when getting fasta data: --write-single-snp --hwe --fasta-loc
+
 ./00-scripts/stacks2_populations_reference.sh
 ```
