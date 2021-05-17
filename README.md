@@ -119,3 +119,11 @@ GENOME="GCA_004348235.1_GSC_HSeal_1.0_genomic"
 
 ./00-scripts/stacks2_populations_reference.sh
 ```
+
+## 3. Analysis of results
+Clone simple_pop_stats.       
+
+Using all samples, copy out the genepop as follows to put into simple_pop_stats
+`cp 05-stacks/populations.snps.genepop ../simple_pop_stats_2020-10-13/02_input_data/bhs_p7_r0.7_maf0.01_2021-05-17.gen`     
+
+Analyze via `ms_harbour_seal/01_scripts/hs_popn_analysis.R`     
