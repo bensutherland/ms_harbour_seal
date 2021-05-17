@@ -127,3 +127,37 @@ Using all samples, copy out the genepop as follows to put into simple_pop_stats
 `cp 05-stacks/populations.snps.genepop ../simple_pop_stats_2020-10-13/02_input_data/bhs_p7_r0.7_maf0.01_2021-05-17.gen`     
 
 Analyze via `ms_harbour_seal/01_scripts/hs_popn_analysis.R`     
+
+
+
+
+## 4. Analysis of results - relatedness
+##### This section not run yet #####
+Note: must run differentiation analysis first.    
+#### i. Shared coancestry by related
+Input: single SNP, HWE filtered from adegenet output (adegenet_output.RData).      
+Open Rscript `01_scripts/relatedeness.R` to translate the genlight obj to related format, and calculate coancestry per population, plotting per-population relatedness metrics.       
+Output: See `09-diversity_stats/relatedness_*.pdf`   
+##### /end/ This section not run yet #####
+
+#### ii. Shared haplotypes by fineRADstructure
+Input: haplotype output from stacks populations as input to fineRADstructure         
+Copy out radpainter input
+`cp stacks_workflow/05-stacks/populations.haps.radpainter ms_harbour_seal/04_relatedness/populations.haps.radpainter`      
+
+Depends that you have run the runall script, and at the haplotype output of the populations module, it will output into SimpleMatrix format.     
+
+In general, follow instructions from the fineRADstructure tutorial (http://cichlid.gurdon.cam.ac.uk/fineRADstructure.html), but in brief:  
+1) Calculate co-ancestry matrix:     
+`RADpainter paint 21-haplotype_results/populations.haps.radpainter`      
+2) Assign individuals to populations:     
+`finestructure -x 100000 -y 100000 21-haplotype_results/populations.haps_chunks.out 21-haplotype_results/populations.haps_chunks.out.mcmc.xml`
+Uses Markov chain Monte Carlo (mcmc) without a tree, assumes data is from one pop (-I 1).    
+3) Build tree:        
+`finestructure -m T -x 10000 21-haplotype_results/populations.haps_chunks.out 21-haplotype_results/populations.haps_chunks.out.mcmc.xml 21-haplotype_results/populations.haps_chunks.out.mcmcTree.xml`      
+
+Then plot using the Rscripts adapted from the fineRADstructure site (see above)   
+`01_scripts/fineRADstructurePlot.R` (follow instructions here)      
+`01_scripts/FinestructureLibrary.R`     
+This will produce plots in the working directory.  
+
