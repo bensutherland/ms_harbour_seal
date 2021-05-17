@@ -149,12 +149,12 @@ Depends that you have run the runall script, and at the haplotype output of the 
 
 In general, follow instructions from the fineRADstructure tutorial (http://cichlid.gurdon.cam.ac.uk/fineRADstructure.html), but in brief:  
 1) Calculate co-ancestry matrix:     
-`RADpainter paint 21-haplotype_results/populations.haps.radpainter`      
+`RADpainter paint 04_relatedness/populations.haps.radpainter`      
 2) Assign individuals to populations:     
-`finestructure -x 100000 -y 100000 21-haplotype_results/populations.haps_chunks.out 21-haplotype_results/populations.haps_chunks.out.mcmc.xml`
+`finestructure -x 100000 -y 100000 04_relatedness/populations.haps_chunks.out 04_relatedness/populations.haps_chunks.out.mcmc.xml`
 Uses Markov chain Monte Carlo (mcmc) without a tree, assumes data is from one pop (-I 1).    
 3) Build tree:        
-`finestructure -m T -x 10000 21-haplotype_results/populations.haps_chunks.out 21-haplotype_results/populations.haps_chunks.out.mcmc.xml 21-haplotype_results/populations.haps_chunks.out.mcmcTree.xml`      
+`finestructure -m T -x 10000 04_relatedness/populations.haps_chunks.out 04_relatedness/populations.haps_chunks.out.mcmc.xml 04_relatedness/populations.haps_chunks.out.mcmcTree.xml`      
 
 Then plot using the Rscripts adapted from the fineRADstructure site (see above)   
 `01_scripts/fineRADstructurePlot.R` (follow instructions here)      
