@@ -62,10 +62,8 @@ fastqc 04-all_samples/*.fq.gz -o 04-all_samples/fastqc_demulti/ -t 14
 multiqc -o 04-all_samples/fastqc_demulti/ 04-all_samples/fastqc_demulti
 ```
 
-#### #TODO Here is where I will add some detail to remove low sequence samples ###
-#### #TODO First need to determine a threshold ###
-
-### c. Map reads against the reference genome
+## 2. Analyze data
+### a. Map reads against the reference genome
 #### Index the genome
 ```
 # (Only needed once) Change directory into the genome folder and index the genome 
@@ -73,7 +71,7 @@ bwa index -p GCA_004348235.1_GSC_HSeal_1.0_genomic ./GCA_004348235.1_GSC_HSeal_1
 ```
 
 #### Align individual files against the genome
-#### Edit variables within the following script then launch:    
+Edit variables within the following script then launch:    
 ```
 # First update the script below to point towards the directory containing your genome
 GENOMEFOLDER="/home/ben/Documents/genomes"
@@ -83,6 +81,32 @@ GENOME="GCA_004348235.1_GSC_HSeal_1.0_genomic"
 # Launch
 ./00-scripts/bwa_mem_align_reads.sh 14
 ```
+
+### b. Inspect alignment results
+Compare per-sample reads and alignments, and per-sample reads and number of aligned scaffolds:      
+`./../ms_harbour_seal/01_scripts/assess_results.sh`    
+`./../ms_harbour_seal/01_scripts/determine_number_unique_scaff_mapped.sh`    
+
+Produces:      
+```
+04-all_samples/reads_per_sample_table.txt
+04-all_samples/mappings_per_sample.txt
+# A graph of number reads and aligned reads
+# a graph of number reads and scaffolds mapped
+```
+
+Other calculations:
+```
+# Total reads in all samples:     
+awk '{ print $2 } ' 04-all_samples/reads_per_sample_table.txt | paste -sd+ - | bc
+# Total reads before de-multiplexing (note: divide by 4 due to fastqc):   
+for i in $(ls 02-raw/*.fastq.gz) ; do echo $i ; gunzip -c $i | wc -l ; done
+```
+
+#### Remove low sequence depth samples 
+`mkdir 04-all_samples/removed_samples`     
+
+#### #TODO First need to determine a threshold ###
 
 ### d. Genotype
 #### Prepare and run gstacks
