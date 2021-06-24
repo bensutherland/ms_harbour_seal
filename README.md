@@ -119,29 +119,22 @@ for i in $(ls 02-raw/*.fastq.gz) ; do echo $i ; gunzip -c $i | wc -l ; done
 ./00-scripts/stacks2_gstacks_reference.sh
 
 # Edit and run the ./00-scripts/stacks2_populations_reference.sh script
+#  for single SNP and fasta export (and per locus hwe) 
+populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
+    -t "$NUM_CPU" -p 7 -r 0.7 \
+    --renz nsiI --merge-sites \
+    --min-maf 0.01 \
+    --ordered-export --genepop \
+    --write-single-snp --hwe --fasta-loc
+
 #  for haplotypes:
-#populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
-#    -t "$NUM_CPU" -p 5 -r 0.7 \
-#    --renz nsiI --merge-sites \
-#    --min-maf 0.01 \
-#    --ordered-export --genepop \
-#    --radpainter
+populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
+    -t "$NUM_CPU" -p 7 -r 0.7 \
+    --renz nsiI --merge-sites \
+    --min-maf 0.01 \
+    --ordered-export --genepop \
+    --radpainter
 
-# OR 
-
-# Edit and run populations module for single SNP and fasta export, and hwe
-#populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
-#    -t "$NUM_CPU" -p 5 -r 0.7 \
-#    --renz nsiI --merge-sites \
-#    --min-maf 0.01 \
-#    --ordered-export --genepop \
-#    # --radpainter
-#    --write-single-snp
-#    --hwe --fasta-loc \
-
-
-
-./00-scripts/stacks2_populations_reference.sh
 ```
 
 ## 3. Analysis of results
