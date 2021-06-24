@@ -135,18 +135,21 @@ populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
     --ordered-export --genepop \
     --radpainter
 
+# Suggest to make a different folder containing everything populations.* after each of those runs in order to preserve the data from multiple populations runs.     
+e.g., populations_out_single_snp and populations_out_microhaplotypes     
+
 ```
 
 ## 3. Analysis of results
 Clone simple_pop_stats.       
 
-Using all samples, copy out the genepop as follows to put into simple_pop_stats
-`cp 05-stacks/populations.snps.genepop ../simple_pop_stats_2020-10-13/02_input_data/bhs_p7_r0.7_maf0.01_2021-05-17.gen`     
+Copy out the single-variant-per-locus genepop to simple_pop_stats:      
+`cp 05-stacks/populations_out_single_snp/populations.snps.genepop ../simple_pop_stats/02_input_data/`
+
+Rename your file
+`bhs_p<X>_r<0.X>_maf<0.0X>_20<XX-XX-XX>.gen` (note: customize as per true values for variables)         
 
 Analyze via `ms_harbour_seal/01_scripts/hs_popn_analysis.R`     
-
-
-
 
 ## 4. Analysis of results - relatedness
 ##### This section not run yet #####
