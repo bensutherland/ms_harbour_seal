@@ -84,18 +84,18 @@ GENOME="GCA_004348235.1_GSC_HSeal_1.0_genomic"
 
 ### b. Inspect alignment results
 Compare per-sample reads and alignments, and per-sample reads and number of aligned scaffolds:      
-`./../ms_harbour_seal/01_scripts/assess_results.sh`    
-`./../ms_harbour_seal/01_scripts/determine_number_unique_scaff_mapped.sh`    
-
-Produces:      
 ```
-04-all_samples/reads_per_sample_table.txt
-04-all_samples/mappings_per_sample.txt
-# A graph of number reads and aligned reads
-# a graph of number reads and scaffolds mapped
+./../ms_harbour_seal/01_scripts/assess_results.sh    # also uses plotting Rscript 'assess_reads_mappings.R'   
+./../ms_harbour_seal/01_scripts/determine_number_unique_scaff_mapped.sh
+# These scripts will produce: 
+# 04-all_samples/reads_per_sample_table.txt 
+# 04-all_samples/mappings_per_sample.txt
+# graph: number reads and aligned reads
+# graph: number reads and scaffolds mapped
+
 ```
 
-Other calculations:
+Other optional calculations:    
 ```
 # Total reads in all samples:     
 awk '{ print $2 } ' 04-all_samples/reads_per_sample_table.txt | paste -sd+ - | bc
