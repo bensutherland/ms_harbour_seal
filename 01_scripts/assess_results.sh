@@ -23,7 +23,6 @@ sed 'N;s/\n/ /' reads_per_sample.txt > reads_per_sample_table.txt
 # Remove intermediate file
 rm reads_per_sample.txt
 
-
 ## Number Mappings
 # Determine number of reads per file from samples file
 for i in $(ls *.bam) ; 
@@ -42,5 +41,5 @@ cd ..
 
 # Plot number of reads and number of mappings in a barplot
 # Will save out to main directory 
-Rscript ./../ms_oyster_popgen/01_scripts/assess_reads_mappings.R
+Rscript ./../ms_harbour_seal/01_scripts/assess_reads_mappings.R
 
