@@ -104,9 +104,17 @@ for i in $(ls 02-raw/*.fastq.gz) ; do echo $i ; gunzip -c $i | wc -l ; done
 ```
 
 #### Remove low sequence depth samples 
-`mkdir 04-all_samples/removed_samples`     
+In general, this requires running the below first to see if there are any odd effects of low coverage, although one could also look to the mean coverage above and remove any clear outliers.     
+For this project, we will remove any individuals with fewer than 1 M reads. There are two that have almost no reads, so these are an easy choice to remove. A few have between 1 M - 1.5 M, we will keep an eye on those.    
+```
+# make a directory to store removed samples
+mkdir 04-all_samples/removed_samples
 
-#### #TODO First need to determine a threshold ###
+# move problematic samples to the directory
+mv 04-all_samples/NBC_110* 04-all_samples/removed_samples/
+mv 04-all_samples/ORE_104.* 04-all_samples/removed_samples/
+```     
+Then redo the genotyping below to make sure you get all of the proper outputs of stacks with the problematic samples removed.     
 
 ### d. Genotype
 #### Prepare and run gstacks
