@@ -113,8 +113,23 @@ mkdir 04-all_samples/removed_samples
 # move problematic samples to the directory
 mv 04-all_samples/NBC_110* 04-all_samples/removed_samples/
 mv 04-all_samples/ORE_104.* 04-all_samples/removed_samples/
-```     
-Then redo the genotyping below to make sure you get all of the proper outputs of stacks with the problematic samples removed.     
+```  
+Now you must also correct `01-info_files/sample_information.csv` by dropping those two samples as well, before building the population map below.       
+```
+# First create an all-sample backup
+cp 01-info_files/sample_information.csv 01-info_files/sample_information_all_samples.csv  
+
+# Then remove the offending samples (-P allows use of \t to identify tabs), although you cannot write to the same file, so a move is required
+grep -vP 'NBC\t110|ORE\t104' 01-info_files/sample_information.csv > 01-info_files/sample_information_outlier_rem.csv
+mv 01-info_files/sample_information_outlier_rem.csv 01-info_files/sample_information.csv 
+
+# Check to make sure the correct number of samples were removed
+wc -l 01-info_files/sample_information*
+
+# now you have a backup file, and a trimmed sample_information file. Proceed below to rebuild the pop map
+```
+
+Redo the genotyping below to make sure you get all of the proper outputs of stacks with the problematic samples removed.     
 
 ### d. Genotype
 #### Prepare and run gstacks
