@@ -166,6 +166,8 @@ e.g., populations_out_single_snp and populations_out_microhaplotypes
 ## 3. Analysis of results
 Clone simple_pop_stats.       
 
+Copy in the harbour seal colour file from an earlier version of simple_pop_stats. The file is entitled 'harbour_seal_pops_colours.csv'       
+
 Copy out the single-variant-per-locus genepop to simple_pop_stats:      
 `cp 05-stacks/populations_out_single_snp/populations.snps.genepop ../simple_pop_stats/02_input_data/`
 
