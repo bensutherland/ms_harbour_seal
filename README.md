@@ -202,7 +202,7 @@ Uses Markov chain Monte Carlo (mcmc) without a tree, assumes data is from one po
 `finestructure -m T -x 10000 04_relatedness/populations.haps_chunks.out 04_relatedness/populations.haps_chunks.out.mcmc.xml 04_relatedness/populations.haps_chunks.out.mcmcTree.xml`      
 
 Then plot using the Rscripts adapted from the fineRADstructure site (see above)   
-`01_scripts/fineRADstructurePlot.R` (follow instructions here)      
+`01_scripts/fineRADstructurePlot.R` (follow instructions here, running this will source the libraries below)      
 `01_scripts/FinestructureLibrary.R`     
 This will produce plots in the working directory.  
 
