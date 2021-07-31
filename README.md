@@ -22,8 +22,7 @@ Clone https://github.com/enormandeau/stacks_workflow and change directory into t
 ### a. Set up 
 1. Put all raw data in `02-raw` using cp or cp -l    
 2. Prepare the sample info file (see template in repo sample_information.csv). Note: tab-delimited, even though name is .csv.    
-3. Download reference genome (oyster_v9): https://www.ncbi.nlm.nih.gov/assembly/GCF_000297895.1/      
-note: source citation is Zhang et al. 2012, Nature. https://www.ncbi.nlm.nih.gov/pubmed/22992520/       
+3. Download reference genome: https://www.ncbi.nlm.nih.gov/genome/?term=Phoca+vitulina      
 
 
 ### b. Clean data
