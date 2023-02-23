@@ -1,5 +1,5 @@
 # Harbour Seal Project - Population Genetics
-Manuscript analysis instruction guide and associated scripts for the Harbour Seal Population Genetics analysis. This pipeline is still in development stage, and comes with no guarantees.            
+Manuscript analysis for the harbour seal population genetics analysis. This pipeline is still in development stage, and comes with no guarantees.            
 Primarily uses the repo from E. Normandeau of Labo Bernatchez for genotyping https://github.com/enormandeau/stacks_workflow, which uses Stacks v2.0.       
 
 
@@ -22,7 +22,7 @@ Clone https://github.com/enormandeau/stacks_workflow and change directory into t
 ### a. Set up 
 1. Put all raw data in `02-raw` using cp or cp -l    
 2. Prepare the sample info file (see template in repo sample_information.csv). Note: tab-delimited, even though name is .csv.    
-3. Download reference genome: https://www.ncbi.nlm.nih.gov/genome/?term=Phoca+vitulina      
+3. Download GenBank version reference genome: https://www.ncbi.nlm.nih.gov/genome/?term=Phoca+vitulina      
 
 
 ### b. Clean data
