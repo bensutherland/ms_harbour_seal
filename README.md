@@ -205,3 +205,77 @@ Then plot using the Rscripts adapted from the fineRADstructure site (see above)
 `01_scripts/FinestructureLibrary.R`     
 This will produce plots in the working directory.  
 
+
+## 5. Re-analysis of previous data
+Requires a fresh `stacks_workflow` repo.       
+Put fastq files in `02-raw`, as they have already been demultiplexed, but still need to be trimmed (contain adapters).        
+Compress files:     
+`gzip *.fastq`
+
+Run fastqc on the files:       
+`mkdir 02-raw/fastqc/`       
+`fastqc 02-raw/*.fastq.gz -o 02-raw/fastqc/ -t 2`       
+`multiqc -o 02-raw/fastqc/ 02-raw/fastqc`       
+
+Remove adapters and trim:      
+`00-scripts/01_cutadapt.sh 3`        
+
+Run fastqc on the files:       
+`mkdir 02-raw/trimmed/fastqc`      
+`fastqc 02-raw/trimmed/*.fastq.gz -o 02-raw/trimmed/fastqc/ -t 2`
+`multiqc -o 02-raw/trimmed/fastqc 02-raw/trimmed/fastqc`      
+
+Move the trimmed files to `04-all_samples`, which skips script `00-scripts/03_rename_samples.sh`      
+`mv 02-raw/trimmed/*.fastq.gz 04-all_samples/`      
+
+After editing the script, run the alignment       
+`./00-scripts/bwa_mem_align_reads.sh 3`       
+
+Aligned data will be in `04-all_samples`.       
+
+Prepare a renaming script (this is required because the renaming script of stacks workflow was not used, nor was demultiplexing)         
+```
+grep -vE '^#' 01-info_files/sample_information.csv | awk '{ print "mv " $1".sorted.bam " $3"_"$4".sorted.bam" }' - > 00-scripts/rename_aligned_bams.sh 
+
+# Manually add the shebang to the file (#!/bin/bash), then make it executable using chmod.      
+
+# Run the renaming
+cd 04-all_samples
+./../00-scripts/rename_aligned_bams.sh    
+cd ..
+# Files are ready, and should all be in the format of the population map file
+```
+
+#### Genotyping
+Prepare and run gstacks        
+```
+# Prepare the population map
+./00-scripts/04_prepare_population_map.sh
+
+# Edit and run gstacks
+# Only update the NUM_CPU variable and run
+./00-scripts/stacks2_gstacks_reference.sh
+
+# Since our main goal here is to observe diversity, keep multiple SNPs per locus to capture full variation, therefore use the following edits in the script, then run it:       
+
+#populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
+#    -t "$NUM_CPU" -p 6 -r 0.7 \
+#    --min-maf 0.01 \
+#    --ordered-export --genepop 
+
+./00-scripts/stacks2_populations_reference.sh
+
+```
+
+
+
+## Supplemental Information 
+Note: if you are struggling with multiqc, use the following approach:      
+```
+# install miniconda by package installer
+conda create -y -n my-conda-env
+source activate my-conda-env
+conda install -c bioconda -c conda-forge multiqc
+# then run your multiqc commands with your conda env active
+```
+
