@@ -267,7 +267,80 @@ Prepare and run gstacks
 
 ```
 
+### de novo approach
+Copy all raw data to 02-raw.     
+Copy sample information to 01-info_files
+Create script for renaming raw data (at fastq.gz rather than bam):      
+`grep -vE '^#' 01-info_files/sample_information.csv | awk '{ print "mv " $1 " " $3"_"$4".fq.gz" }' > 00-scripts/rename_raw_fastq_for_pop_map.sh`        
+...then add the shebang and chmod to make executable.       
 
+```
+cd 02-raw
+./../00-scripts/rename_raw_fastq_for_pop_map.sh
+cd ..
+
+```
+
+Run fastqc on the files:       
+`mkdir 02-raw/fastqc/`       
+`fastqc 02-raw/*.fq.gz -o 02-raw/fastqc/ -t 2`      
+`multiqc -o 02-raw/fastqc/ 02-raw/fastqc`       
+
+Remove adapters and trim:      
+(note: first edit script to identify .fq.gz instead of .fastq.gz)      
+`00-scripts/01_cutadapt.sh 3`        
+
+Run fastqc on the files:       
+`mkdir 02-raw/trimmed/fastqc`      
+`fastqc 02-raw/trimmed/*.fq.gz -o 02-raw/trimmed/fastqc/ -t 2`
+`multiqc -o 02-raw/trimmed/fastqc 02-raw/trimmed/fastqc`      
+
+If running de novo, need to truncate to a constant read length. Use the following custom script to truncate all reads to 70 bp and only keep the 70 bp reads:     
+```
+mkdir 02-raw/standardized
+./00-scripts/standardize_reads.sh
+```
+The output will be in the new standardized folder. 
+
+fastqc again:      
+```
+mkdir 02-raw/standardized/fastqc 
+fastqc 02-raw/standardized/*.fq.gz -o 02-raw/standardized/fastqc/ -t 2
+multiqc -o 02-raw/standardized/fastqc 02-raw/standardized/fastqc  
+```
+
+
+Clone three copies of stacks workflow, for each denovo analysis. Copy in the sample info file:    
+```
+cp stacks_workflow_trimming/01-info_files/sample_information.csv  stacks_workflow_denovo_wc/01-info_files/
+cp stacks_workflow_trimming/01-info_files/sample_information.csv  stacks_workflow_denovo_ec/01-info_files/
+cp stacks_workflow_trimming/01-info_files/sample_information.csv  stacks_workflow_denovo_eu/01-info_files/
+```
+
+rsync in the raw data into the 04-all_data folder:     
+```
+rsync -avzP 02-raw/standardized/END* ./../stacks_workflow_denovo_wc/04-all_samples/
+rsync -avzP 02-raw/standardized/KOD* ./../stacks_workflow_denovo_wc/04-all_samples/
+rsync -avzP 02-raw/standardized/BIC* ./../stacks_workflow_denovo_ec/04-all_samples/
+rsync -avzP 02-raw/standardized/NFL* ./../stacks_workflow_denovo_ec/04-all_samples/
+rsync -avzP 02-raw/standardized/ORK* ./../stacks_workflow_denovo_eu/04-all_samples/
+rsync -avzP 02-raw/standardized/WNL* ./../stacks_workflow_denovo_eu/04-all_samples/
+```
+
+For each:     
+Make population map
+`./00-scripts/04_prepare_population_map.sh`       
+
+```
+# note: for all of the following, update the NUM_CPU variable before launching
+./00-scripts/stacks2_ustacks.sh
+./00-scripts/stacks2_cstacks.sh
+./00-scripts/stacks2_sstacks.sh
+./00-scripts/stacks2_tsv2bam.sh
+./00-scripts/stacks2_gstacks.sh # note: this should be gstacks_denovo
+./00-scripts/stacks2_populations.sh # note: this should be populations_denovo
+
+```
 
 ## Supplemental Information 
 Note: if you are struggling with multiqc, use the following approach:      
