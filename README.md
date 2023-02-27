@@ -267,13 +267,18 @@ Prepare and run gstacks
 
 ```
 
-### de novo approach
+## Genotyping de novo, coast-specific
+#### Set up
+clone and rename as `stacks_workflow_trimming`         
 Copy all raw data to 02-raw.     
-Copy sample information to 01-info_files
+Copy sample information to 01-info_files      
+
+#### Renaming fastq files to fit the expected names from pop map
 Create script for renaming raw data (at fastq.gz rather than bam):      
 `grep -vE '^#' 01-info_files/sample_information.csv | awk '{ print "mv " $1 " " $3"_"$4".fq.gz" }' > 00-scripts/rename_raw_fastq_for_pop_map.sh`        
 ...then add the shebang and chmod to make executable.       
 
+Run the script:     
 ```
 cd 02-raw
 ./../00-scripts/rename_raw_fastq_for_pop_map.sh
@@ -281,6 +286,7 @@ cd ..
 
 ```
 
+#### Quality control
 Run fastqc on the files:       
 `mkdir 02-raw/fastqc/`       
 `fastqc 02-raw/*.fq.gz -o 02-raw/fastqc/ -t 2`      
@@ -310,6 +316,7 @@ multiqc -o 02-raw/standardized/fastqc 02-raw/standardized/fastqc
 ```
 
 
+#### Region-specific analysis
 Clone three copies of stacks workflow, for each denovo analysis. Copy in the sample info file:    
 ```
 cp stacks_workflow_trimming/01-info_files/sample_information.csv  stacks_workflow_denovo_wc/01-info_files/
@@ -327,7 +334,7 @@ rsync -avzP 02-raw/standardized/ORK* ./../stacks_workflow_denovo_eu/04-all_sampl
 rsync -avzP 02-raw/standardized/WNL* ./../stacks_workflow_denovo_eu/04-all_samples/
 ```
 
-For each:     
+#### For each of denovo wc, ec, and eu:     
 Make population map
 `./00-scripts/04_prepare_population_map.sh`       
 
@@ -339,6 +346,7 @@ Make population map
 ./00-scripts/stacks2_tsv2bam.sh
 ./00-scripts/stacks2_gstacks.sh # note: this should be gstacks_denovo
 ./00-scripts/stacks2_populations.sh # note: this should be populations_denovo
+# for populations, use -p 2, -r 0.7, and --min-maf 0.01 as well as --hwe
 
 ```
 
