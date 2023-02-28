@@ -17,45 +17,44 @@ The pipeline primarily depends on the [stacks_workflow](https://github.com/enorm
 
 
 ## 0. Obtain repos for analysis
-Clone this repository, and `stacks_workflow`, both at the same directory level. Change into the `stacks_workflow` directory for all commands.       
+Clone this repository, `stacks_workflow`, and `simple_pop_stats`, all at the same directory level. Change into the `stacks_workflow` directory for all commands, and use R for `simple_pop_stats`.       
 
 
 ## 1. Preparing Data
 ### a. Set up 
 1. Put all raw data in `02-raw` using cp or cp -l    
-2. Prepare the sample info file (see template in repo sample_information.csv). Note: tab-delimited, even though name is .csv.    
+2. Prepare the sample info file (see template in repo `sample_information.csv`). Note: tab-delimited, even though name is .csv.    
 3. Download GenBank version reference genome: https://www.ncbi.nlm.nih.gov/genome/?term=Phoca+vitulina      
 
 ### b. Clean data
 View raw data with fastqc and multiqc:    
-#### FastQC raw data reads
 ```
 mkdir 02-raw/fastqc_raw
 fastqc 02-raw/*.fastq.gz -o 02-raw/fastqc_raw/ -t 5
 multiqc -o 02-raw/fastqc_raw/ 02-raw/fastqc_raw
 ```
 
-#### Prepare lane info
+Prepare lane info
 ```
 ./00-scripts/00_prepare_lane_info.sh
 ```
 
-#### Run cutadapt in order to trim off adapters, and remove any reads less than 50 bp
+Run cutadapt in order to trim off adapters, and remove any reads less than 50 bp
 ```
 ./00-scripts/01_cutadapt.sh 12
 ```
 
-#### Demultiplex with two rxn enzymes in parallel over multiple CPUs
+Demultiplex with two rxn enzymes in parallel over multiple CPUs
 ```
 ./00-scripts/02_process_radtags_2_enzymes_parallel.sh 80 nsiI mspI 14
 ```
 
-#### Rename the files
+Rename the files
 ```
 ./00-scripts/03_rename_samples.sh
 ```
 
-#### FastQC de-multiplexed data
+FastQC de-multiplexed data
 ```
 mkdir 04-all_samples/fastqc_demulti
 fastqc 04-all_samples/*.fq.gz -o 04-all_samples/fastqc_demulti/ -t 14
@@ -63,21 +62,20 @@ multiqc -o 04-all_samples/fastqc_demulti/ 04-all_samples/fastqc_demulti
 ```
 
 
-## 2. Analyze data
+## 2. Alignment and genotyping
 ### a. Map reads against the reference genome
-#### Index the genome
+Index the genome
 ```
 # (Only needed once) Change directory into the genome folder and index the genome 
 bwa index -p GCA_004348235.1_GSC_HSeal_1.0_genomic ./GCA_004348235.1_GSC_HSeal_1.0_genomic.fna.gz
 ```
 
-#### Align individual files against the genome
-Edit variables within the following script then launch:    
+Align individual files against the genome:     
 ```
 # First update the script below to point towards the directory containing your genome
 GENOMEFOLDER="/home/ben/Documents/genomes"
 GENOME="GCA_004348235.1_GSC_HSeal_1.0_genomic"
-# also comment out the module load commands
+# note: also comment out the module load commands
 
 # Launch
 ./00-scripts/bwa_mem_align_reads.sh 14
@@ -104,7 +102,7 @@ awk '{ print $2 } ' 04-all_samples/reads_per_sample_table.txt | paste -sd+ - | b
 for i in $(ls 02-raw/*.fastq.gz) ; do echo $i ; gunzip -c $i | wc -l ; done
 ```
 
-#### Remove low sequence depth samples 
+#### Optional: remove low sequence depth samples 
 In general, this requires running the below first to see if there are any odd effects of low coverage, although one could also look to the mean coverage above and remove any clear outliers.     
 For this project, we will remove any individuals with fewer than 1 M reads. There are two that have almost no reads, so these are an easy choice to remove. A few have between 1 M - 1.5 M, we will keep an eye on those.    
 ```
@@ -134,7 +132,7 @@ Redo the genotyping below to make sure you get all of the proper outputs of stac
 
 
 ### d. Genotype using reference genome-guided approach
-#### Prepare and run gstacks
+Prepare and run gstacks      
 ```
 # Prepare the population map
 ./00-scripts/04_prepare_population_map.sh
