@@ -142,21 +142,26 @@ Prepare and run gstacks
 ./00-scripts/stacks2_gstacks_reference.sh
 
 # Edit and run the ./00-scripts/stacks2_populations_reference.sh script
-#  for single SNP and fasta export (and per locus hwe) 
+# For summary statistics (e.g., HOBS) and microhaplotypes
 populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
     -t "$NUM_CPU" -p 7 -r 0.7 \
-    --renz nsiI --merge-sites \
+    --min-maf 0.01 --ordered-export --radpainter \
+    --vcf --hwe
+
+# Make directory and move output 
+mkdir 05-stacks/popn_out_mhaps
+mv 05-stacks/populations* 05-stacks/popn_out_mhaps/
+
+# Run populations again, for population genetic analysis (i.e., single-SNP per tag)
+populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
+    -t "$NUM_CPU" -p 7 -r 0.7 \
     --min-maf 0.01 \
     --ordered-export --genepop \
     --write-single-snp --hwe --fasta-loc
 
-#  for haplotypes:
-populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
-    -t "$NUM_CPU" -p 7 -r 0.7 \
-    --renz nsiI --merge-sites \
-    --min-maf 0.01 \
-    --ordered-export --genepop \
-    --radpainter
+# Make directory and move output 
+mkdir 05-stacks/popn_out_single_snp
+mv 05-stacks/populations* 05-stacks/popn_out_single_snp/
 
 # Suggest to make a different folder containing everything populations.* after each of those runs in order to preserve the data from multiple populations runs.     
 e.g., populations_out_single_snp and populations_out_microhaplotypes     
