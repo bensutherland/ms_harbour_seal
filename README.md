@@ -1,29 +1,30 @@
 # Harbour Seal Project - Population Genetics
-Manuscript analysis for the harbour seal population genetics analysis. This pipeline is still in development stage, and comes with no guarantees.            
-Primarily uses the repo from E. Normandeau of Labo Bernatchez for genotyping https://github.com/enormandeau/stacks_workflow, which uses Stacks v2.0.       
+Analysis for harbour seal population genomics study. The pipeline is designed for the uses described in the manuscript and comes with no guarantees outside of that analysis.    
+The pipeline primarily depends on the [stacks_workflow](https://github.com/enormandeau/stacks_workflow) repo of E. Normandeau (Labo Bernatchez) for genotyping, and [simple_pop_stats](https://github.com/bensutherland/simple_pop_stats) for population genetic analyses.         
 
 
 ### Requirements    
-`cutadapt` https://cutadapt.readthedocs.io/en/stable/index.html    
-`fastqc` https://www.bioinformatics.babraham.ac.uk/projects/fastqc/   
-`multiqc` https://multiqc.info/   
-`bwa` http://bio-bwa.sourceforge.net/   
-`samtools (v.1.9)` http://www.htslib.org/    
-`stacks (v2.3e)` http://catchenlab.life.illinois.edu/stacks/     
-`fineRADstructure` http://cichlid.gurdon.cam.ac.uk/fineRADstructure.html     
-`ape` (install within R)     
-`stacks_workflow` https://github.com/enormandeau/stacks_workflow         
+[Stacks2 (v2.3e)](http://catchenlab.life.illinois.edu/stacks/)     
+[stacks_workflow](https://github.com/enormandeau/stacks_workflow)         
+[simple_pop_stats](https://github.com/bensutherland/simple_pop_stats)      
+[cutadapt](https://cutadapt.readthedocs.io/en/stable/index.html)    
+[fastqc](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)      
+[multiqc](https://multiqc.info/)     
+[bwa](http://bio-bwa.sourceforge.net/)    
+[samtools (v.1.9)](http://www.htslib.org/)    
+[plink2](https://www.cog-genomics.org/plink/2.0/)           
+[fineRADstructure](http://cichlid.gurdon.cam.ac.uk/fineRADstructure.html)    
 
 
-## 0. Obtain repo for analysis
-Clone https://github.com/enormandeau/stacks_workflow and change directory into the repo. All scripts will be run from here.   
+## 0. Obtain repos for analysis
+Clone this repository, and `stacks_workflow`, both at the same directory level. Change into the `stacks_workflow` directory for all commands.       
+
 
 ## 1. Preparing Data
 ### a. Set up 
 1. Put all raw data in `02-raw` using cp or cp -l    
 2. Prepare the sample info file (see template in repo sample_information.csv). Note: tab-delimited, even though name is .csv.    
 3. Download GenBank version reference genome: https://www.ncbi.nlm.nih.gov/genome/?term=Phoca+vitulina      
-
 
 ### b. Clean data
 View raw data with fastqc and multiqc:    
@@ -60,6 +61,7 @@ mkdir 04-all_samples/fastqc_demulti
 fastqc 04-all_samples/*.fq.gz -o 04-all_samples/fastqc_demulti/ -t 14
 multiqc -o 04-all_samples/fastqc_demulti/ 04-all_samples/fastqc_demulti
 ```
+
 
 ## 2. Analyze data
 ### a. Map reads against the reference genome
@@ -130,14 +132,15 @@ wc -l 01-info_files/sample_information*
 
 Redo the genotyping below to make sure you get all of the proper outputs of stacks with the problematic samples removed.     
 
-### d. Genotype
+
+### d. Genotype using reference genome-guided approach
 #### Prepare and run gstacks
 ```
 # Prepare the population map
 ./00-scripts/04_prepare_population_map.sh
 
 # Edit and run gstacks
-# Only update the NUM_CPU variable and run
+# Update the NUM_CPU variable and run
 ./00-scripts/stacks2_gstacks_reference.sh
 
 # Edit and run the ./00-scripts/stacks2_populations_reference.sh script
