@@ -207,38 +207,67 @@ Then plot using the Rscripts adapted from the fineRADstructure site (see above)
 This will produce plots in the working directory.  
 
 
-## 5. Re-analysis of previous data
-Requires a fresh `stacks_workflow` repo.       
-Put fastq files in `02-raw`, as they have already been demultiplexed, but still need to be trimmed (contain adapters).        
-Compress files:     
-`gzip *.fastq`
+## 5. Re-analysis of Liu et al. 2022
+This section re-analyzes the data within [Liu et al. 2022](https://onlinelibrary.wiley.com/doi/full/10.1111/mec.16365) to compare with the present data, as well as to compare the results when using a reference genome or a _de novo_ approach.       
 
-Run fastqc on the files:       
-`mkdir 02-raw/fastqc/`       
-`fastqc 02-raw/*.fastq.gz -o 02-raw/fastqc/ -t 2`       
-`multiqc -o 02-raw/fastqc/ 02-raw/fastqc`       
+Clone a new `stacks_workflow` repository. Obtain raw data from NCBI SRA (e.g., via RunSelector and SRA Toolkit).      
+
+### a. Data preparation and cleaning
+Raw files have been demultiplexed, but still contain adapters. They also need to be trimmed to a constant length as per program specifications of `Stacks2` _de novo_. Put fastq data in `02-raw`, and compress using:      
+`gzip 02-raw/*.fastq`      
+
+Rename files to fit the population map:       
+```
+# create script to rename raw data      
+grep -vE '^#' 01-info_files/sample_information.csv | awk '{ print "mv " $1 " " $3"_"$4".fq.gz" }' > 00-scripts/rename_raw_fastq_for_pop_map.sh        
+# then add the shebang and chmod to make executable.       
+
+# run the renaming script:     
+cd 02-raw
+./../00-scripts/rename_raw_fastq_for_pop_map.sh
+cd ..
+```
+
+Inspect raw data:       
+```
+mkdir 02-raw/fastqc/       
+fastqc 02-raw/*.fastq.gz -o 02-raw/fastqc/ -t 2       
+multiqc -o 02-raw/fastqc/ 02-raw/fastqc       
+```
 
 Remove adapters and trim:      
 `00-scripts/01_cutadapt.sh 3`        
 
-Run fastqc on the files:       
-`mkdir 02-raw/trimmed/fastqc`      
-`fastqc 02-raw/trimmed/*.fastq.gz -o 02-raw/trimmed/fastqc/ -t 2`
-`multiqc -o 02-raw/trimmed/fastqc 02-raw/trimmed/fastqc`      
+Inspect trimmed data:      
+```
+mkdir 02-raw/trimmed/fastqc      
+fastqc 02-raw/trimmed/*.fastq.gz -o 02-raw/trimmed/fastqc/ -t 2
+multiqc -o 02-raw/trimmed/fastqc 02-raw/trimmed/fastqc      
+```
 
-Move the trimmed files to `04-all_samples`, which skips script `00-scripts/03_rename_samples.sh`      
+Truncate the reads to require all reads to be 70 bp in constant length (as per de novo stacks requirements):      
+```
+mkdir 02-raw/standardized
+./00-scripts/standardize_reads.sh
+```
+The output will be in the new standardized folder. 
+
+Inspect standardized data:      
+```
+mkdir 02-raw/standardized/fastqc 
+fastqc 02-raw/standardized/*.fq.gz -o 02-raw/standardized/fastqc/ -t 2
+multiqc -o 02-raw/standardized/fastqc 02-raw/standardized/fastqc  
+```
+
+Move prepared files to `04-all_samples` (note: skipping renaming script)       
 `mv 02-raw/trimmed/*.fastq.gz 04-all_samples/`      
 
+#### Align and genotype
 After editing the script, run the alignment       
 `./00-scripts/bwa_mem_align_reads.sh 3`       
 
 Aligned data will be in `04-all_samples`.       
 
-Prepare a renaming script (this is required because the renaming script of stacks workflow was not used, nor was demultiplexing)         
-```
-grep -vE '^#' 01-info_files/sample_information.csv | awk '{ print "mv " $1".sorted.bam " $3"_"$4".sorted.bam" }' - > 00-scripts/rename_aligned_bams.sh 
-
-# Manually add the shebang to the file (#!/bin/bash), then make it executable using chmod.      
 
 # Run the renaming
 cd 04-all_samples
@@ -274,46 +303,7 @@ clone and rename as `stacks_workflow_trimming`
 Copy all raw data to 02-raw.     
 Copy sample information to 01-info_files      
 
-#### Renaming fastq files to fit the expected names from pop map
-Create script for renaming raw data (at fastq.gz rather than bam):      
-`grep -vE '^#' 01-info_files/sample_information.csv | awk '{ print "mv " $1 " " $3"_"$4".fq.gz" }' > 00-scripts/rename_raw_fastq_for_pop_map.sh`        
-...then add the shebang and chmod to make executable.       
 
-Run the script:     
-```
-cd 02-raw
-./../00-scripts/rename_raw_fastq_for_pop_map.sh
-cd ..
-
-```
-
-#### Quality control
-Run fastqc on the files:       
-`mkdir 02-raw/fastqc/`       
-`fastqc 02-raw/*.fq.gz -o 02-raw/fastqc/ -t 2`      
-`multiqc -o 02-raw/fastqc/ 02-raw/fastqc`       
-
-Remove adapters and trim:      
-(note: first edit script to identify .fq.gz instead of .fastq.gz)      
-`00-scripts/01_cutadapt.sh 3`        
-
-Run fastqc on the files:       
-`mkdir 02-raw/trimmed/fastqc`      
-`fastqc 02-raw/trimmed/*.fq.gz -o 02-raw/trimmed/fastqc/ -t 2`
-`multiqc -o 02-raw/trimmed/fastqc 02-raw/trimmed/fastqc`      
-
-If running de novo, need to truncate to a constant read length. Use the following custom script to truncate all reads to 70 bp and only keep the 70 bp reads:     
-```
-mkdir 02-raw/standardized
-./00-scripts/standardize_reads.sh
-```
-The output will be in the new standardized folder. 
-
-fastqc again:      
-```
-mkdir 02-raw/standardized/fastqc 
-fastqc 02-raw/standardized/*.fq.gz -o 02-raw/standardized/fastqc/ -t 2
-multiqc -o 02-raw/standardized/fastqc 02-raw/standardized/fastqc  
 ```
 
 
