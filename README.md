@@ -162,24 +162,29 @@ populations -P "$STACKS_FOLDER" -M "$INFO_FILES_FOLDER"/"$POP_MAP" \
 # Make directory and move output 
 mkdir 05-stacks/popn_out_single_snp
 mv 05-stacks/populations* 05-stacks/popn_out_single_snp/
-
-# Suggest to make a different folder containing everything populations.* after each of those runs in order to preserve the data from multiple populations runs.     
-e.g., populations_out_single_snp and populations_out_microhaplotypes     
-
 ```
 
 ## 3. Analysis of results
-Clone simple_pop_stats.       
+### Data setup
+Change directory into `simple_pop_stats`.      
 
-Copy in the harbour seal colour file from an earlier version of simple_pop_stats. The file is entitled 'harbour_seal_pops_colours.csv'       
+Copy in the harbour seal colour file:       
+`cp ../ms_harbour_seal/00_archive/harbour_seal_pops_colours.csv ./00_archive`       
 
-Copy out the single-variant-per-locus genepop to simple_pop_stats:      
-`cp 05-stacks/populations_out_single_snp/populations.snps.genepop ../simple_pop_stats/02_input_data/`
+Copy in the single-variant per-locus genepop:       
+`cp ../stacks_workflow/05-stacks/popn_out_single_snp/populations.snps.genepop ./02_input_data/`     
 
 Rename your file
 `bhs_p<X>_r<0.X>_maf<0.0X>_20<XX-XX-XX>.gen` (note: customize as per true values for variables)         
 
+### Analysis
 Analyze via `ms_harbour_seal/01_scripts/hs_popn_analysis.R`     
+
+In brief, this analysis will:       
+1. Evaluate missing data per individual 
+2. Global analysis (i.e., PCA, FST, dendrogram)
+3. Coast-specific MAF, HWE, PCA, FST
+
 
 ## 4. Analysis of results - relatedness
 ##### This section not run yet #####
@@ -273,7 +278,7 @@ After editing the script, run the alignment
 
 Aligned data will be in `04-all_samples`.       
 
-
+```
 # Run the renaming
 cd 04-all_samples
 ./../00-scripts/rename_aligned_bams.sh    
