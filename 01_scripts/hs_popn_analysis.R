@@ -2,63 +2,577 @@
 # 2020-10-13 initialized
 # start by sourcing simple_pop_stats then quit the menu
 
-# Set custom output folder
-set_output_folder(result_path= "/hdd/harbour_seal/simple_pop_stats_2020-10-13/03_results/")
-
+#### 01. Load data and check missing per ind ####
 # Load genepop and characterize
 load_genepop(datatype = "SNP")
-# from here: /hdd/harbour_seal/simple_pop_stat/02_input_data/bhs_single_snp_p5_r0.7_maf0.01_out_rem_2020-10-24.gen 
+# from here:  "02_input_data/bhs_p7_r0.7_maf0.01_2023-02-28.gen"
 
-# Drop oddball samples (identified from PCA in prev iteration)
-rownames(obj$tab)
-removeInd <- c("NFL_20192991", "NFL_20042268")
-
-# remove individuals from *genind object*
-# note that in this step there's no longer a comma needed before the
-# closing square bracket
-# obj.bck <- obj
-obj <- obj[!row.names(obj@tab) %in% removeInd]
-
+# Clean up pop names
+pop(obj) <- gsub(pattern = "_.*", replacement = "", x = pop(obj))
 unique(pop(obj))
 
-# Clean up pop names to just the region
-pop(obj) <- gsub(pattern = "_.*", replacement = "", x = pop(obj))
-
+# Characterize genepop
 characterize_genepop(df = obj, pdf_width = 7, pdf_height = 5, cex_names = 0.8, N=30)
 
-# Make a dendrogram
-make_tree(bootstrap = TRUE, boot_obj = obj, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
+# Characterize missing data per individual
+percent_missing_by_ind(df = obj)
+head(missing_data.df)
+write.csv(x = missing_data.df, file = "03_results/missing_data_per_indiv.csv", row.names = F)
 
-# PCA
-pca_from_genind(data = obj, PCs_ret = 3, plot_eigen=TRUE, plot_allele_loadings=TRUE, colour_file = "00_archive/harbour_seal_pops_colours.csv")
+summary(missing_data.df$ind.per.missing)  # max: 0.127 (12.7%); mean: 2.9%
+sd(missing_data.df$ind.per.missing)       # sd: 3.0%
+
+
+# ### Plot per-individual missing data ###
+# # Provide population IDs to missing data, based on names
+# missing_data.df$pop <- rep(x = NA, times = nrow(missing_data.df))
+# 
+# # Provide population based on the individual name
+# missing_data.df$pop[grep(pattern = "CAL", x = missing_data.df$ind)] <- "CAL"
+# missing_data.df$pop[grep(pattern = "EQB", x = missing_data.df$ind)] <- "EQB"
+# missing_data.df$pop[grep(pattern = "LAB", x = missing_data.df$ind)] <- "LAB"
+# missing_data.df$pop[grep(pattern = "NBC", x = missing_data.df$ind)] <- "NBC"
+# missing_data.df$pop[grep(pattern = "NFL", x = missing_data.df$ind)] <- "NFL"
+# missing_data.df$pop[grep(pattern = "ORE", x = missing_data.df$ind)] <- "ORE"
+# missing_data.df$pop[grep(pattern = "SOG", x = missing_data.df$ind)] <- "SOG"
+# 
+# table(missing_data.df$pop)
+# 
+# head(missing_data.df)
+# 
+# # Combine colours to dataframe for plotting, don't sort, as it is still in the same order as the obj
+# colours <- read.delim2(file = "00_archive/harbour_seal_pops_colours.csv", sep = ",")
+# 
+# plot_cols.df <- merge(x = missing_data.df, y = colours, by.x = "pop", by.y = "collection", all.x = T
+#                       , sort = F
+# )
+# 
+# # Plot missing data by individual
+# pdf(file = "03_results/geno_rate_by_ind.pdf", width = 7, height = 4)
+# plot(1 - plot_cols.df$ind.per.missing, ylab = "Genotyping rate"
+#      , col = plot_cols.df$colour
+#      , las = 1
+#      , xlab = "Individual"
+#      , ylim = c(0,1)
+# )
+# 
+# abline(h = 0.7, lty = 3)
+# 
+# legend("bottomright", legend = unique(plot_cols.df$pop)
+#        , fill = unique(plot_cols.df$colour)
+#        , cex = 1.0
+#        , bg = "white"
+# )
+# dev.off()
+# 
+# ## note: No need to remove any individuals
+# 
+# 
+# ## Retain names of retained indiv and loci
+# inds <- indNames(obj)
+# loci <- locNames(obj)
+# 
+# write.table(x = inds, file = "03_results/retained_individuals.txt", sep = "\t", quote = F
+#             , row.names = F, col.names = F
+# )
+# 
+# write.table(x = loci, file = "03_results/retained_loci.txt", sep = "\t", quote = F
+#             , row.names = F, col.names = F
+# )
+
+
+#### 02. Global PCA, FST, dendrogram ####
+# note: have not removed HWE outliers yet, ok?  (#TODO#)
+## PCA
+pca_from_genind(data = obj
+                , PCs_ret = 4
+                , plot_eigen = TRUE
+                , plot_allele_loadings = TRUE
+                , retain_pca_obj = TRUE
+                , colour_file = "00_archive/harbour_seal_pops_colours.csv"
+)
 
 # Manually run pca_from_genind to pull out the pca1 obj (note: should assign this out to the global enviro as default)
 pca_scores_result <- pca.obj$scores
 write.csv(x = pca_scores_result, file = "03_results/pca_scores_result.csv", quote = F, row.names = T)
 
-# Calculate FST
-calculate_FST(format="genind", dat = obj, separated = FALSE)
+## FST
+calculate_FST(format = "genind", dat = obj, separated = FALSE, bootstrap = TRUE)
 
-# Calculate FST with 95% CI
+# Make a dendrogram
+make_tree(bootstrap = TRUE, boot_obj = obj, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
 
-# Change from genind file to hfstat
-data.hf <- genind2hierfstat(obj)
-rownames(data.hf) <- indNames(obj)
 
-dim(data.hf)
-data.hf[1:10,1:6]
+#### 03. Coast-specific, Atlantic ####
+obj.sep <- seppop(obj)
+obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL, obj.sep$LAB)
+obj_atlantic
 
-# Pairwise Fst w/ bootstrapping (hierfstat)
-boot.fst <- boot.ppfst(dat = data.hf, nboot = 1000, quant = c(0.025,0.975))
-boot.fst
+## Re-calculate AF to remove low MAF variants
+obj.gl <- gi2gl(gi = obj_atlantic, parallel = T) # Convert to genlight
 
-# Collect output
-lower.limit <- t(boot.fst$ll)
-upper.limit <- boot.fst$ul
-upper.limit[is.na(upper.limit)] <- 0
-lower.limit[is.na(lower.limit)] <- 0
-boot.fst.output <- upper.limit + lower.limit
-boot.fst.output
+# Calculate frequency of second allele
+myFreq <- glMean(obj.gl)
 
-filename <- paste(result.path, datatype, "_boot_fst_output.csv", sep = "")
-write.csv(x = boot.fst.output, file = filename)
+# Ensure each locus second allele is the minor allele
+for(i in 1:length(myFreq)){
+  
+  # if the second allele is > 0.5, this would be considered the major allele, and so calculate the minor allele frequency
+  if(myFreq[i] > 0.5){
+    
+    myFreq[i] <- 1-myFreq[i]
+    
+  }else{
+    
+    myFreq[i] <- myFreq[i]
+    
+  }
+  
+}
+
+## MAF filter
+MAF_rem_final <- names(myFreq[which(myFreq < 0.01)])
+length(MAF_rem_final)
+markers_to_keep <- setdiff(x = locNames(obj_atlantic), y = MAF_rem_final)
+length(markers_to_keep)
+obj_atlantic <- obj_atlantic[, loc=markers_to_keep]
+obj_atlantic
+
+# Keep AF of only the retained variants
+myFreq <- myFreq[which(myFreq >= 0.01)]
+length(myFreq) # should match the number of variants kept in obj_atlantic
+
+# Save
+myFreq.atl <- myFreq
+rm(myFreq)
+
+
+## HWE filter
+hwe_eval(data = obj_atlantic, alpha = 0.01)
+head(per_locus_hwe_NFL.df)
+
+# Which col contains pval? 
+col.oi <- grep(pattern = "Pr", x = colnames(per_locus_hwe_NFL.df))
+
+# Identify mnames of outliers
+hwe_outlier_mname_EQB.vec     <-   per_locus_hwe_EQB.df[per_locus_hwe_EQB.df[, col.oi] < 0.01, "mname"]
+hwe_outlier_mname_NFL.vec    <-    per_locus_hwe_NFL.df[per_locus_hwe_NFL.df[, col.oi] < 0.01, "mname"]
+hwe_outlier_mname_LAB.vec    <-    per_locus_hwe_LAB.df[per_locus_hwe_LAB.df[, col.oi] < 0.01, "mname"]
+
+# How many outliers (p < 0.01) per population
+length(hwe_outlier_mname_EQB.vec)   #  173 markers out of HWE
+length(hwe_outlier_mname_NFL.vec)   #  233 markers out of HWE
+length(hwe_outlier_mname_LAB.vec)   #   85 markers out of HWE
+
+
+# How many unique HWE deviating markers?  
+markers_to_drop <- c(hwe_outlier_mname_EQB.vec, hwe_outlier_mname_NFL.vec, hwe_outlier_mname_LAB.vec)
+length(markers_to_drop)             # 491 total markers identified
+markers_to_drop <- unique(markers_to_drop)
+length(markers_to_drop)             #  unique markers identified
+
+markers_to_keep <- setdiff(x = locNames(obj_atlantic), y = markers_to_drop)
+length(markers_to_keep) # 3470 markers to keep
+
+obj_atlantic <- obj_atlantic[, loc=markers_to_keep]
+obj_atlantic
+
+## Per locus statistics
+per_locus_stats(data = obj_atlantic)
+
+# Markers with HOBS > 0.5? 
+hobs.outliers <- per_loc_stats.df[per_loc_stats.df$Hobs > 0.5, "mname"] 
+length(hobs.outliers) # 266 markers
+
+keep <- setdiff(x = locNames(obj_atlantic), y = hobs.outliers)
+length(keep)
+obj_atlantic <- obj_atlantic[, loc=keep] 
+obj_atlantic
+
+# Re-run per loc stats
+per_locus_stats(data = obj_atlantic)
+
+# Save for later
+per_loc_stats_atl.df <- per_loc_stats.df
+
+
+### Save your PCA output into its own folder, then re-run
+## Global PCA
+pca_from_genind(data = obj_atlantic
+                , PCs_ret = 4
+                , plot_eigen = TRUE
+                , plot_allele_loadings = TRUE
+                , retain_pca_obj = TRUE
+                , colour_file = "00_archive/harbour_seal_pops_colours.csv"
+)
+
+# Manually run pca_from_genind to pull out the pca1 obj (note: should assign this out to the global enviro as default)
+pca_scores_result <- pca.obj$scores
+write.csv(x = pca_scores_result, file = "03_results/pca_scores_result_atlantic.csv", quote = F, row.names = T)
+
+
+## FST
+calculate_FST(format = "genind", dat = obj_atlantic, separated = FALSE, bootstrap = TRUE)
+
+## Relatedness
+obj_atlantic
+
+# Calculate inter-individual relatedness
+relatedness_calc(data = obj_atlantic, datatype = "SNP") # will output as "03_results/kinship_analysis_<date>.Rdata"
+
+# Explore the data
+head(output$relatedness)
+
+
+# Plot
+relatedness_plot(file = "03_results/kinship_analysis_2023-03-01.Rdata", same_pops = TRUE, plot_by = "codes", pdf_width = 7, pdf_height = 5)
+# It looks like Ritland > 0.1 is outlier for both CACA and SOSO
+
+
+# Plot distribution of relatedness statistics
+pdf(file = "03_results/hist_relatedness_Ritland.pdf", width = 6, height = 3.5)
+par(mfrow=c(1,1))
+hist(output$relatedness$ritland, main = "", xlab = "relatedness (Ritland)", las = 1)
+abline(v = 0.1, lty = 3)
+text(paste0("median = ", median(output$relatedness$ritland))
+     , y = 800, x = 0.15)
+text(paste0("mean = "  , round(mean(output$relatedness$ritland), digits = 3))
+     , y = 650, x = 0.15)
+dev.off()
+
+
+# Which pairs have more than 0.25 relatedness using the wang statistic? 
+highly_related.df <- output$relatedness[output$relatedness$ritland >= 0.1, c("ind1.id", "ind2.id", "group", "ritland")]
+nrow(highly_related.df) # 54
+highly_related.df
+
+# How many individuals does this involve that are highly related? 
+length(unique(x = c(highly_related.df$ind1.id, highly_related.df$ind2.id)))
+
+# How many individuals does this involve? 
+length(unique(x = c(output$relatedness$ind1.id, output$relatedness$ind2.id)))
+
+write.table(x = highly_related.df, file = "03_results/highly_related_2023-03-01.csv", quote = F, sep = ","
+            , row.names = F
+)
+
+
+# Move all results into an 'Atlantic' folder, then proceed to Pacific analysis
+
+
+#### 04. Coast-specific, Pacific ####
+obj.sep <- seppop(obj)
+obj_pacific <- repool(obj.sep$NBC, obj.sep$SOG, obj.sep$ORE, obj.sep$CAL)
+
+## Re-calculate AF to remove low MAF variants
+obj.gl <- gi2gl(gi = obj_pacific, parallel = T) # Convert to genlight
+
+# Calculate frequency of second allele
+myFreq <- glMean(obj.gl)
+
+# Ensure each locus second allele is the minor allele
+for(i in 1:length(myFreq)){
+  
+  if(myFreq[i] > 0.5){
+    
+    myFreq[i] <- 1-myFreq[i]
+    
+  }else{
+    
+    myFreq[i] <- myFreq[i]
+    
+  }
+  
+}
+
+## Final MAF filter
+MAF_rem_final <- names(myFreq[which(myFreq < 0.01)])
+length(MAF_rem_final)
+markers_to_keep <- setdiff(x = locNames(obj_pacific), y = MAF_rem_final)
+obj_pacific <- obj_pacific[, loc=markers_to_keep]
+obj_pacific
+
+# Keep AF of only the retained variants
+myFreq <- myFreq[which(myFreq >= 0.01)]
+length(myFreq)
+
+# Save
+myFreq.pac <- myFreq
+rm(myFreq)
+
+## HWE filter
+hwe_eval(data = obj_pacific, alpha = 0.01)
+head(per_locus_hwe_SOG.df)
+
+# Identify column with the p-val
+col.oi <- grep(pattern = "Pr", x = colnames(per_locus_hwe_SOG.df))
+
+# Identify mnames of outliers
+hwe_outlier_mname_SOG.vec     <-   per_locus_hwe_SOG.df[per_locus_hwe_SOG.df[, col.oi] < 0.01, "mname"]
+hwe_outlier_mname_NBC.vec    <-    per_locus_hwe_NBC.df[per_locus_hwe_NBC.df[, col.oi] < 0.01, "mname"]
+hwe_outlier_mname_CAL.vec    <-    per_locus_hwe_CAL.df[per_locus_hwe_CAL.df[, col.oi] < 0.01, "mname"]
+hwe_outlier_mname_ORE.vec    <-    per_locus_hwe_ORE.df[per_locus_hwe_ORE.df[, col.oi] < 0.01, "mname"]
+
+# How many outliers (p < 0.01) per population
+length(hwe_outlier_mname_SOG.vec)   #  513 markers out of HWE
+length(hwe_outlier_mname_NBC.vec)   #  155 markers out of HWE
+length(hwe_outlier_mname_CAL.vec)   #  323 markers out of HWE
+length(hwe_outlier_mname_ORE.vec)   #  306 markers out of HWE
+
+
+# How many unique HWE deviating markers?  
+markers_to_drop <- c(hwe_outlier_mname_SOG.vec, hwe_outlier_mname_NBC.vec, hwe_outlier_mname_CAL.vec, hwe_outlier_mname_ORE.vec)
+length(markers_to_drop)             # 1297 markers out of HWE in at least one population
+markers_to_drop <- unique(markers_to_drop)
+length(markers_to_drop)             #  996 unique markers out of HWE in at least one population
+markers_to_keep <- setdiff(x = locNames(obj_pacific), y = markers_to_drop)
+length(markers_to_keep) # 7937 markers to keep
+
+obj_pacific <- obj_pacific[, loc=markers_to_keep]
+obj_pacific
+
+## Per locus statistics
+per_locus_stats(data = obj_pacific)
+
+# Markers with HOBS > 0.5? 
+hobs.outliers <- per_loc_stats.df[per_loc_stats.df$Hobs > 0.5, "mname"] 
+length(hobs.outliers) # 230 markers
+
+keep <- setdiff(x = locNames(obj_pacific), y = hobs.outliers)
+length(keep)
+obj_pacific <- obj_pacific[, loc=keep] 
+obj_pacific
+
+# Re-run per loc stats
+per_locus_stats(data = obj_pacific)
+
+ # Save for later
+per_loc_stats_pac.df <- per_loc_stats.df
+
+
+## Global PCA
+pca_from_genind(data = obj_pacific
+                , PCs_ret = 4
+                , plot_eigen = TRUE
+                , plot_allele_loadings = TRUE
+                , retain_pca_obj = TRUE
+                , colour_file = "00_archive/harbour_seal_pops_colours.csv"
+)
+
+# Manually run pca_from_genind to pull out the pca1 obj (note: should assign this out to the global enviro as default)
+pca_scores_result <- pca.obj$scores
+write.csv(x = pca_scores_result, file = "03_results/pca_scores_result.csv", quote = F, row.names = T)
+
+## FST
+calculate_FST(format = "genind", dat = obj_pacific, separated = FALSE, bootstrap = TRUE)
+
+#### Relatedness ####
+obj_pacific
+
+# Calculate inter-individual relatedness
+relatedness_calc(data = obj_pacific, datatype = "SNP") # will output as "03_results/kinship_analysis_<date>.Rdata"
+
+# Explore the data
+head(output$relatedness)
+
+
+# Plot
+relatedness_plot(file = "03_results/kinship_analysis_2023-03-01.Rdata", same_pops = TRUE, plot_by = "codes", pdf_width = 7, pdf_height = 5)
+# It looks like Ritland > 0.1 is outlier for both CACA and SOSO
+
+
+# Plot distribution of relatedness statistics
+pdf(file = "03_results/hist_relatedness_Ritland.pdf", width = 6, height = 3.5)
+par(mfrow=c(1,1))
+hist(output$relatedness$ritland, main = "", xlab = "relatedness (Ritland)", las = 1)
+abline(v = 0.1, lty = 3)
+text(paste0("median = ", median(output$relatedness$ritland))
+     , y = 800, x = 0.15)
+text(paste0("mean = "  , round(mean(output$relatedness$ritland), digits = 3))
+     , y = 650, x = 0.15)
+dev.off()
+
+
+# Which pairs have more than 0.25 relatedness using the wang statistic? 
+highly_related.df <- output$relatedness[output$relatedness$ritland >= 0.1, c("ind1.id", "ind2.id", "group", "ritland")]
+nrow(highly_related.df) # 54
+highly_related.df
+
+# How many individuals does this involve that are highly related? 
+length(unique(x = c(highly_related.df$ind1.id, highly_related.df$ind2.id)))
+
+# How many individuals does this involve? 
+length(unique(x = c(output$relatedness$ind1.id, output$relatedness$ind2.id)))
+
+write.table(x = highly_related.df, file = "03_results/highly_related_2023-03-01.csv", quote = F, sep = ","
+            , row.names = F
+)
+
+
+
+
+
+#### 05. BC-specific marker test for top FST ####
+obj_pacific_filt.sep <- seppop(x = obj_pacific)
+obj_pacific_filt <- repool(obj_pacific_filt.sep$NBC, obj_pacific_filt.sep$SOG)
+
+## Re-calculate AF to remove low MAF variants
+obj.gl <- gi2gl(gi = obj_pacific_filt, parallel = T) # Convert to genlight
+
+# Calculate frequency of second allele
+myFreq <- glMean(obj.gl)
+
+# Ensure each locus second allele is the minor allele
+for(i in 1:length(myFreq)){
+  
+  if(myFreq[i] > 0.5){
+    
+    myFreq[i] <- 1-myFreq[i]
+    
+  }else{
+    
+    myFreq[i] <- myFreq[i]
+    
+  }
+  
+}
+
+## Final MAF filter
+MAF_rem_final <- names(myFreq[which(myFreq < 0.01)])
+length(MAF_rem_final)
+markers_to_keep <- setdiff(x = locNames(obj_pacific_filt), y = MAF_rem_final)
+obj_pacific_filt <- obj_pacific_filt[, loc=markers_to_keep]
+obj_pacific_filt
+
+
+# Calculate per-locus FST
+per_locus_stats(data = obj_pacific_filt)
+
+# Save for later
+per_loc_stats_BC.df <- per_loc_stats.df
+
+
+## Compare this to the per-locus stats for Pacific-wide, to see how much overlap
+head(per_loc_stats_BC.df)
+nrow(per_loc_stats_BC.df)
+head(per_loc_stats_pac.df)
+nrow(per_loc_stats_pac.df)
+
+## Merge the all Pacific and the BC-only pops to compare FST per locus
+per_loc_stats_PAC_BC.df <- merge(x = per_loc_stats_pac.df, y = per_loc_stats_BC.df, by = "mname")
+nrow(per_loc_stats_PAC_BC.df)
+head(per_loc_stats_PAC_BC.df)
+
+
+pdf(file = "03_results/per_locus_FST_HOBS_all_Pacific_or_BC.pdf", width = 8, height = 3.5)
+par(mfrow=c(1,2))
+plot(per_loc_stats_PAC_BC.df$Fst.x, per_loc_stats_PAC_BC.df$Fst.y
+     , xlab = "per locus FST, all Pacific", ylab = "per locus FST, BC only"
+     )
+plot(per_loc_stats_PAC_BC.df$Hobs.x, per_loc_stats_PAC_BC.df$Hobs.y
+     , xlab = "per locus HOBS, all Pacific", ylab = "per locus HOBS, BC only"
+     )
+dev.off()
+
+#### Note: we could also do a US only one too... ###
+
+
+#### 06. Multi-coast plotting ####
+# # Plot
+# pdf(file = paste0("03_results/maf_hist_post_filter_atlantic.pdf"), width = 6, height = 4)
+# hist(myFreq
+#      #, proba=T # note: does not sum to 1, not worth using
+#      , col="gold", xlab = "Minor allele frequency (MAF)"
+#      , main = ""
+#      #, ylim = c(0, 2500)
+#      , ylab = "Number of loci"
+#      , las = 1
+#      , breaks = 20
+# )
+# text(x = 0.4, y = 1000, labels = paste("n = ", length(myFreq), " loci", sep = "" ))
+# dev.off()
+# 
+# # Save out the MAF calculation as a table
+# myFreq <- round(myFreq, digits = 3)
+# write.table(x = myFreq, file = "03_results/allele_freq_retained_loci_atlantic.txt"
+#             , sep = "\t", quote = F
+#             , row.names = T, col.names = F
+# )
+# 
+# # Exploration
+# table(myFreq < 0.01)
+# table(myFreq < 0.1) 
+
+### MOVE TO LATER ###
+# # Plot marker HOBS
+# pdf(file = "03_results/per_locus_Hobs_Pacific.pdf", width = 6.5, height = 4) 
+# plot(x = per_loc_stats_reduced.df$Hobs
+#      , xlab = "Marker (index)"
+#      , ylab = "Observed Heterozygosity (Hobs)"
+#      , las = 1
+#      , ylim = c(0,1)
+# )
+# 
+# abline(h = 0.5, lty = 3)
+# dev.off()
+
+#### MOVE TO LATER, PAcific 
+# # Plot
+# pdf(file = paste0("03_results/maf_hist_post_filter.pdf"), width = 6, height = 4)
+# hist(myFreq
+#      #, proba=T # note: does not sum to 1, not worth using
+#      , col="gold", xlab = "Minor allele frequency (MAF)"
+#      , main = ""
+#      #, ylim = c(0, 2500)
+#      , ylab = "Number of loci"
+#      , las = 1
+#      , breaks = 20
+# )
+# text(x = 0.4, y = 1000, labels = paste("n = ", length(myFreq), " loci", sep = "" ))
+# dev.off()
+# 
+# # Save out the MAF calculation as a table
+# myFreq <- round(myFreq, digits = 3)
+# write.table(x = myFreq, file = "03_results/allele_freq_retained_loci.txt"
+#             , sep = "\t", quote = F
+#             , row.names = T, col.names = F
+# )
+# 
+# # Exploration
+# table(myFreq < 0.01)
+# table(myFreq < 0.1) 
+
+##### MOVE TO LATER, PACIFIC 
+# # Plot marker HOBS
+# pdf(file = "03_results/per_locus_Hobs_Pacific.pdf", width = 6.5, height = 4) 
+# plot(x = per_loc_stats_reduced.df$Hobs
+#      , xlab = "Marker (index)"
+#      , ylab = "Observed Heterozygosity (Hobs)"
+#      , las = 1
+#      , ylim = c(0,1)
+# )
+# 
+# abline(h = 0.5, lty = 3)
+# dev.off()
+
+
+#### 0.7 Export ####
+# Write out object
+save.image(file = "03_results/pre-related_analysis.RData")
+
+
+
+
+
+
+
+
+
+#### 0.4 Export ####
+# Write out object
+save.image(file = "03_results/completed_analysis.RData")
+
+
+
+
+
