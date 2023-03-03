@@ -309,13 +309,9 @@ Prepare and run gstacks
 
 ## Genotyping de novo, coast-specific
 #### Set up
-clone and rename as `stacks_workflow_trimming`         
-Copy all raw data to 02-raw.     
-Copy sample information to 01-info_files      
-
-
-```
-
+Clone and rename as `stacks_workflow_trimming`         
+Copy all raw data to `02-raw`.     
+Copy sample information to `01-info_files`      
 
 #### Region-specific analysis
 Clone three copies of stacks workflow, for each denovo analysis. Copy in the sample info file:    
@@ -325,7 +321,7 @@ cp stacks_workflow_trimming/01-info_files/sample_information.csv  stacks_workflo
 cp stacks_workflow_trimming/01-info_files/sample_information.csv  stacks_workflow_denovo_eu/01-info_files/
 ```
 
-rsync in the raw data into the 04-all_data folder:     
+rsync in the raw data into the `04-all_data` folder:     
 ```
 rsync -avzP 02-raw/standardized/END* ./../stacks_workflow_denovo_wc/04-all_samples/
 rsync -avzP 02-raw/standardized/KOD* ./../stacks_workflow_denovo_wc/04-all_samples/
