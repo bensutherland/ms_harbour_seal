@@ -226,7 +226,7 @@ head(output$relatedness)
 
 # Plot
 relatedness_plot(file = "03_results/kinship_analysis_2023-03-01.Rdata", same_pops = TRUE, plot_by = "codes", pdf_width = 7, pdf_height = 5)
-# It looks like Ritland > 0.1 is outlier for both CACA and SOSO
+# It looks like Ritland > 0.1 is outlier 
 
 
 # Plot distribution of relatedness statistics
@@ -235,15 +235,15 @@ par(mfrow=c(1,1))
 hist(output$relatedness$ritland, main = "", xlab = "relatedness (Ritland)", las = 1)
 abline(v = 0.1, lty = 3)
 text(paste0("median = ", median(output$relatedness$ritland))
-     , y = 800, x = 0.15)
+     , y = 600, x = 0.15)
 text(paste0("mean = "  , round(mean(output$relatedness$ritland), digits = 3))
-     , y = 650, x = 0.15)
+     , y = 450, x = 0.15)
 dev.off()
 
 
-# Which pairs have more than 0.25 relatedness using the wang statistic? 
+# Which pairs have high relatedness using the ritland statistic? 
 highly_related.df <- output$relatedness[output$relatedness$ritland >= 0.1, c("ind1.id", "ind2.id", "group", "ritland")]
-nrow(highly_related.df) # 54
+nrow(highly_related.df) # 17
 highly_related.df
 
 # How many individuals does this involve that are highly related? 
@@ -477,102 +477,73 @@ dev.off()
 #### Note: we could also do a US only one too... ###
 
 
-#### 06. Multi-coast plotting ####
-# # Plot
-# pdf(file = paste0("03_results/maf_hist_post_filter_atlantic.pdf"), width = 6, height = 4)
-# hist(myFreq
-#      #, proba=T # note: does not sum to 1, not worth using
-#      , col="gold", xlab = "Minor allele frequency (MAF)"
-#      , main = ""
-#      #, ylim = c(0, 2500)
-#      , ylab = "Number of loci"
-#      , las = 1
-#      , breaks = 20
-# )
-# text(x = 0.4, y = 1000, labels = paste("n = ", length(myFreq), " loci", sep = "" ))
-# dev.off()
-# 
-# # Save out the MAF calculation as a table
-# myFreq <- round(myFreq, digits = 3)
-# write.table(x = myFreq, file = "03_results/allele_freq_retained_loci_atlantic.txt"
-#             , sep = "\t", quote = F
-#             , row.names = T, col.names = F
-# )
-# 
-# # Exploration
-# table(myFreq < 0.01)
-# table(myFreq < 0.1) 
+### 06. Multi-coast plotting ####
 
-### MOVE TO LATER ###
-# # Plot marker HOBS
-# pdf(file = "03_results/per_locus_Hobs_Pacific.pdf", width = 6.5, height = 4) 
-# plot(x = per_loc_stats_reduced.df$Hobs
-#      , xlab = "Marker (index)"
-#      , ylab = "Observed Heterozygosity (Hobs)"
-#      , las = 1
-#      , ylim = c(0,1)
-# )
-# 
-# abline(h = 0.5, lty = 3)
-# dev.off()
+## MAF
+# Remove the HWE-filtered variants
+myFreq.pac <- myFreq.pac[names(myFreq.pac) %in% locNames(obj_pacific)]
+myFreq.atl <- myFreq.atl[names(myFreq.atl) %in% locNames(obj_atlantic)]
 
-#### MOVE TO LATER, PAcific 
-# # Plot
-# pdf(file = paste0("03_results/maf_hist_post_filter.pdf"), width = 6, height = 4)
-# hist(myFreq
-#      #, proba=T # note: does not sum to 1, not worth using
-#      , col="gold", xlab = "Minor allele frequency (MAF)"
-#      , main = ""
-#      #, ylim = c(0, 2500)
-#      , ylab = "Number of loci"
-#      , las = 1
-#      , breaks = 20
-# )
-# text(x = 0.4, y = 1000, labels = paste("n = ", length(myFreq), " loci", sep = "" ))
-# dev.off()
-# 
-# # Save out the MAF calculation as a table
-# myFreq <- round(myFreq, digits = 3)
-# write.table(x = myFreq, file = "03_results/allele_freq_retained_loci.txt"
-#             , sep = "\t", quote = F
-#             , row.names = T, col.names = F
-# )
-# 
-# # Exploration
-# table(myFreq < 0.01)
-# table(myFreq < 0.1) 
+# Plot
+pdf(file = paste0("03_results/MAF_hist_pac_atl.pdf"), width = 7, height = 4)
+par(mfrow=c(1,2))
+hist(myFreq.pac
+     #, proba=T # note: does not sum to 1, not worth using
+     , col="grey", xlab = "MAF, Pacific"
+     , main = ""
+     , ylim = c(0, 1750)
+     , ylab = "Number of loci"
+     , las = 1
+     , breaks = 20
+)
+text(x = 0.4, y = 1000, labels = paste("n = ", length(myFreq.pac), " loci", sep = "" ))
 
-##### MOVE TO LATER, PACIFIC 
-# # Plot marker HOBS
-# pdf(file = "03_results/per_locus_Hobs_Pacific.pdf", width = 6.5, height = 4) 
-# plot(x = per_loc_stats_reduced.df$Hobs
-#      , xlab = "Marker (index)"
-#      , ylab = "Observed Heterozygosity (Hobs)"
-#      , las = 1
-#      , ylim = c(0,1)
-# )
-# 
-# abline(h = 0.5, lty = 3)
-# dev.off()
+hist(myFreq.atl
+     #, proba=T # note: does not sum to 1, not worth using
+     , col="grey", xlab = "MAF, Atlantic"
+     , main = ""
+     , ylim = c(0, 1750)
+     , ylab = "Number of loci"
+     , las = 1
+     , breaks = 20
+)
+text(x = 0.4, y = 1000, labels = paste("n = ", length(myFreq.atl), " loci", sep = "" ))
+dev.off()
 
+# Save out the MAF calculation as a table
+myFreq.pac <- round(myFreq.pac, digits = 3)
+write.table(x = myFreq.pac, file = "03_results/allele_freq_retained_loci_pac.txt"
+            , sep = "\t", quote = F
+            , row.names = T, col.names = F
+)
 
-#### 0.7 Export ####
-# Write out object
-save.image(file = "03_results/pre-related_analysis.RData")
+myFreq.atl <- round(myFreq.atl, digits = 3)
+write.table(x = myFreq.atl, file = "03_results/allele_freq_retained_loci_atl.txt"
+            , sep = "\t", quote = F
+            , row.names = T, col.names = F
+)
 
+### HOBS
+# Plot marker HOB
+pdf(file = paste0("03_results/HOBS_hist_pac_atl.pdf"), width = 7, height = 4)
+par(mfrow=c(1,2))
+hist(per_loc_stats_pac.df$Hobs
+     , ylim = c(0,1750)
+     , main = ""
+     , las = 1
+     , xlab = "Hobs, Pacific"
+       )
 
+hist(per_loc_stats_atl.df$Hobs
+     , ylim = c(0,1750)
+     , main = ""
+     , las = 1
+     , xlab = "Hobs, Atlantic"
+     )
 
-
-
-
-
-
+dev.off()
 
 #### 0.4 Export ####
 # Write out object
 save.image(file = "03_results/completed_analysis.RData")
-
-
-
-
 
