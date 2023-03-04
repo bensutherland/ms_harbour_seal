@@ -5,8 +5,8 @@
 #### 01. Load data and check missing per ind ####
 # Load genepop and characterize
 load_genepop(datatype = "SNP")
-# from here:  "02_input_data/bhs_p7_r0.7_maf0.01_2023-02-28.gen"
-
+# all populations, here:  "02_input_data/bhs_p7_r0.7_maf0.01_2023-02-28.gen"
+# balanced and normalized here: "02_input_data/bhs_p4_r0.7_maf0.01_2023-03-04.gen" 
 # Clean up pop names
 pop(obj) <- gsub(pattern = "_.*", replacement = "", x = pop(obj))
 unique(pop(obj))
@@ -105,7 +105,8 @@ make_tree(bootstrap = TRUE, boot_obj = obj, nboots = 10000, dist_metric = "edwar
 
 #### 03. Coast-specific, Atlantic ####
 obj.sep <- seppop(obj)
-obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL, obj.sep$LAB)
+#obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL, obj.sep$LAB) # all pops
+obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL) # balanced, normalized
 obj_atlantic
 
 ## Re-calculate AF to remove low MAF variants
@@ -262,7 +263,9 @@ write.table(x = highly_related.df, file = "03_results/highly_related_2023-03-01.
 
 #### 04. Coast-specific, Pacific ####
 obj.sep <- seppop(obj)
-obj_pacific <- repool(obj.sep$NBC, obj.sep$SOG, obj.sep$ORE, obj.sep$CAL)
+#obj_pacific <- repool(obj.sep$NBC, obj.sep$SOG, obj.sep$ORE, obj.sep$CAL)
+obj_pacific <- repool(obj.sep$SOG, obj.sep$ORE) # balanced, normalized
+#### TODO: add flag here ####
 
 ## Re-calculate AF to remove low MAF variants
 obj.gl <- gi2gl(gi = obj_pacific, parallel = T) # Convert to genlight
@@ -484,6 +487,18 @@ dev.off()
 myFreq.pac <- myFreq.pac[names(myFreq.pac) %in% locNames(obj_pacific)]
 myFreq.atl <- myFreq.atl[names(myFreq.atl) %in% locNames(obj_atlantic)]
 
+#### SHORTCUT PLOTTING HERE ####
+
+table(myFreq.pac < 0.1)
+table(myFreq.atl < 0.1)
+
+length(myFreq.pac)
+length(myFreq.atl)
+
+table(myFreq.pac < 0.05)[2] / length(myFreq.pac)
+table(myFreq.atl < 0.05)[2] / length(myFreq.atl)
+
+
 # Plot
 pdf(file = paste0("03_results/MAF_hist_pac_atl.pdf"), width = 7, height = 4)
 par(mfrow=c(1,2))
@@ -491,7 +506,7 @@ hist(myFreq.pac
      #, proba=T # note: does not sum to 1, not worth using
      , col="grey", xlab = "MAF, Pacific"
      , main = ""
-     , ylim = c(0, 1750)
+     #, ylim = c(0, 1250)
      , ylab = "Number of loci"
      , las = 1
      , breaks = 20
@@ -502,13 +517,17 @@ hist(myFreq.atl
      #, proba=T # note: does not sum to 1, not worth using
      , col="grey", xlab = "MAF, Atlantic"
      , main = ""
-     , ylim = c(0, 1750)
+     #, ylim = c(0, 1250)
      , ylab = "Number of loci"
      , las = 1
      , breaks = 20
 )
 text(x = 0.4, y = 1000, labels = paste("n = ", length(myFreq.atl), " loci", sep = "" ))
 dev.off()
+
+#### TODO: do not plot with set ylim to be able to see the distribution independent of total markers ####
+### Add text of % markers with 0.01 < MAF < 0.05
+### Get same plot from the denovo, with the values as well
 
 # Save out the MAF calculation as a table
 myFreq.pac <- round(myFreq.pac, digits = 3)
