@@ -3,4 +3,8 @@
 *.txt
 *.het
 *.log
+*.radpainter
+*.out
+*.xml
+*.pdf
 
