@@ -5,8 +5,12 @@
 #### 01. Load data and check missing per ind ####
 # Load genepop and characterize
 load_genepop(datatype = "SNP")
+
+## file sources: 
 # all populations, here:  "02_input_data/bhs_p7_r0.7_maf0.01_2023-02-28.gen"
 # balanced and normalized here: "02_input_data/bhs_p4_r0.7_maf0.01_2023-03-04.gen" 
+
+
 # Clean up pop names
 pop(obj) <- gsub(pattern = "_.*", replacement = "", x = pop(obj))
 unique(pop(obj))
@@ -21,64 +25,6 @@ write.csv(x = missing_data.df, file = "03_results/missing_data_per_indiv.csv", r
 
 summary(missing_data.df$ind.per.missing)  # max: 0.127 (12.7%); mean: 2.9%
 sd(missing_data.df$ind.per.missing)       # sd: 3.0%
-
-
-# ### Plot per-individual missing data ###
-# # Provide population IDs to missing data, based on names
-# missing_data.df$pop <- rep(x = NA, times = nrow(missing_data.df))
-# 
-# # Provide population based on the individual name
-# missing_data.df$pop[grep(pattern = "CAL", x = missing_data.df$ind)] <- "CAL"
-# missing_data.df$pop[grep(pattern = "EQB", x = missing_data.df$ind)] <- "EQB"
-# missing_data.df$pop[grep(pattern = "LAB", x = missing_data.df$ind)] <- "LAB"
-# missing_data.df$pop[grep(pattern = "NBC", x = missing_data.df$ind)] <- "NBC"
-# missing_data.df$pop[grep(pattern = "NFL", x = missing_data.df$ind)] <- "NFL"
-# missing_data.df$pop[grep(pattern = "ORE", x = missing_data.df$ind)] <- "ORE"
-# missing_data.df$pop[grep(pattern = "SOG", x = missing_data.df$ind)] <- "SOG"
-# 
-# table(missing_data.df$pop)
-# 
-# head(missing_data.df)
-# 
-# # Combine colours to dataframe for plotting, don't sort, as it is still in the same order as the obj
-# colours <- read.delim2(file = "00_archive/harbour_seal_pops_colours.csv", sep = ",")
-# 
-# plot_cols.df <- merge(x = missing_data.df, y = colours, by.x = "pop", by.y = "collection", all.x = T
-#                       , sort = F
-# )
-# 
-# # Plot missing data by individual
-# pdf(file = "03_results/geno_rate_by_ind.pdf", width = 7, height = 4)
-# plot(1 - plot_cols.df$ind.per.missing, ylab = "Genotyping rate"
-#      , col = plot_cols.df$colour
-#      , las = 1
-#      , xlab = "Individual"
-#      , ylim = c(0,1)
-# )
-# 
-# abline(h = 0.7, lty = 3)
-# 
-# legend("bottomright", legend = unique(plot_cols.df$pop)
-#        , fill = unique(plot_cols.df$colour)
-#        , cex = 1.0
-#        , bg = "white"
-# )
-# dev.off()
-# 
-# ## note: No need to remove any individuals
-# 
-# 
-# ## Retain names of retained indiv and loci
-# inds <- indNames(obj)
-# loci <- locNames(obj)
-# 
-# write.table(x = inds, file = "03_results/retained_individuals.txt", sep = "\t", quote = F
-#             , row.names = F, col.names = F
-# )
-# 
-# write.table(x = loci, file = "03_results/retained_loci.txt", sep = "\t", quote = F
-#             , row.names = F, col.names = F
-# )
 
 
 #### 02. Global PCA, FST, dendrogram ####
@@ -565,4 +511,7 @@ dev.off()
 #### 0.4 Export ####
 # Write out object
 save.image(file = "03_results/completed_analysis.RData")
+
+
+
 
