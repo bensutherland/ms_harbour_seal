@@ -24,7 +24,7 @@
 ##    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ### 1) EDIT THE FOLLOWING THREE LINES TO PROVIDE PATHS TO THE fineRADstructure OUTPUT 
-setwd("/hdd/harbour_seal/ms_harbour_seal/04_relatedness/") ## The directory where the files are located
+setwd("~/Documents/00_sutherland_bioinformatics/harbour_seal/ms_harbour_seal/04_relatedness/") ## The directory where the files are located
 chunkfile<-"populations.haps_chunks.out" ## RADpainter output file
 mcmcfile<-"populations.haps_chunks.out.mcmc.xml" ## finestructure mcmc file
 treefile<-"populations.haps_chunks.out.mcmcTree.xml" ## finestructure tree file
@@ -37,7 +37,7 @@ analysisName <- "batch_1";  maxIndv <- 10000; maxPop<-10000
 
 
 ### 4) EDIT THE PATH TO YOUR COPY of FinestructureLibrary.R
-source("/hdd/harbour_seal/ms_harbour_seal/01_scripts/FinestructureLibrary.R", chdir = TRUE) # read in the R functions, which also calls the needed packages
+source("~/Documents/00_sutherland_bioinformatics/harbour_seal/ms_harbour_seal/01_scripts/FinestructureLibrary.R", chdir = TRUE) # read in the R functions, which also calls the needed packages
 
 ### 5) EXECUTE THE CODE ABOVE AND THE REST OF THE CODE BELOW
 ## make some colours
@@ -92,7 +92,7 @@ datamatrix<-dataraw[fullorder,fullorder] # reorder the data matrix
 tmpmat<-datamatrix 
 tmpmat[tmpmat>maxIndv]<-maxIndv #  # cap the heatmap
 pdf(file=paste(plotsFolder,analysisName,"-SimpleCoancestry.pdf",sep=""),height=40,width=40
-    , colormodel = "gray"
+    #, colormodel = "gray"
     )
 plotFinestructure(tmpmat,dimnames(tmpmat)[[1]],dend=tdend,cols=some.colorsEnd,cex.axis=1.1,edgePar=list(p.lwd=0,t.srt=90,t.off=-0.1,t.cex=1.2))
 dev.off()
@@ -104,7 +104,7 @@ popmeanmatrix<-getPopMeanMatrix(datamatrix,mapstatelist)
 tmpmat<-popmeanmatrix
 tmpmat[tmpmat>maxPop]<-maxPop # cap the heatmap
 pdf(file=paste(plotsFolder,analysisName,"-PopAveragedCoancestry.pdf",sep=""),height=20,width=20
-    , colormodel = "gray"
+    #, colormodel = "gray"
     )
 plotFinestructure(tmpmat,dimnames(tmpmat)[[1]],dend=tdend,cols=some.colorsEnd,cex.axis=1.1,edgePar=list(p.lwd=0,t.srt=90,t.off=-0.1,t.cex=1.2))
 dev.off()
@@ -119,7 +119,8 @@ xcrt=0
 ycrt=45
 
 pdf(file=paste(plotsFolder,analysisName,"-PopAveragedCoancestry2.pdf",sep=""),height=25,width=25
-    , colormodel = "gray"
+    #, colormodel = "gray"
     )
 plotFinestructure(tmpmat,dimnames(tmpmat)[[1]],labelsx=labels(popdendclear),labelsatx=labellocs,xcrt=xcrt,cols=some.colorsEnd,ycrt=ycrt,dend=tdend,cex.axis=1.1,edgePar=list(p.lwd=0,t.srt=90,t.off=-0.1,t.cex=1.2),hmmar=c(3,0,0,1))
 dev.off()
+
