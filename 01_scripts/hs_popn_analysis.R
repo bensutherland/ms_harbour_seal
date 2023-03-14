@@ -2,6 +2,10 @@
 # 2020-10-13 initialized
 # start by sourcing simple_pop_stats then quit the menu
 
+# Set flag, using balanced or all data? 
+dataset <- "all"
+#dataset <- "balanced"
+
 #### 01. Load data and check missing per ind ####
 # Load genepop and characterize
 load_genepop(datatype = "SNP")
@@ -209,9 +213,19 @@ write.table(x = highly_related.df, file = "03_results/highly_related_2023-03-01.
 
 #### 04. Coast-specific, Pacific ####
 obj.sep <- seppop(obj)
-#obj_pacific <- repool(obj.sep$NBC, obj.sep$SOG, obj.sep$ORE, obj.sep$CAL)
-obj_pacific <- repool(obj.sep$SOG, obj.sep$ORE) # balanced, normalized
-#### TODO: add flag here ####
+
+# Repool based on the dataset
+if(dataset=="all"){
+ 
+  # All Pacific pops being repooled
+  obj_pacific <- repool(obj.sep$NBC, obj.sep$SOG, obj.sep$ORE, obj.sep$CAL) 
+  
+}else if(dataset=="balanced"){
+  
+  # 'Balanced' pops being repooled
+  obj_pacific <- repool(obj.sep$SOG, obj.sep$ORE)
+    
+}
 
 ## Re-calculate AF to remove low MAF variants
 obj.gl <- gi2gl(gi = obj_pacific, parallel = T) # Convert to genlight
