@@ -294,6 +294,7 @@ length(markers_to_keep) # 7937 markers to keep
 obj_pacific <- obj_pacific[, loc=markers_to_keep]
 obj_pacific
 
+
 ## Per locus statistics
 per_locus_stats(data = obj_pacific)
 
@@ -372,7 +373,58 @@ write.table(x = highly_related.df, file = "03_results/highly_related_2023-03-01.
 )
 
 
+#### Private Alleles, Burrard Inlet ####
+# Create backup
+#obj_pacific.bck <- obj_pacific 
+#obj_pacific <- obj_pacific.bck
 
+# Explore Burrard Inlet samples further to see if any private alleles are present
+indNames(obj_pacific)
+outlier_samples.id <- c("SOG_108", "SOG_131", "SOG_135", "SOG_115", "SOG_127", "SOG_141", "SOG_125", "SOG_136", "SOG_102")
+nonoutlier_samples.id <- c("SOG_134", "SOG_114", " SOG_123", "SOG_124", "SOG_130", "SOG_117", "SOG_119", "SOG_129", "SOG_101") # haphazardly selected inds from non-Burrard group
+
+# Keep only SOG
+obj_pacific.sep <- seppop(obj_pacific)
+obj.SOG <- obj_pacific.sep$SOG
+
+# Create a df defining the strata for each individual
+strata.df <- as.data.frame(as.character(pop(obj.SOG)), stringsAsFactors = F)
+colnames(strata.df)[1] <- "indiv.pop"
+head(strata.df)
+
+# Add column 'repunit'
+strata.df$repunit <- strata.df$indiv.pop
+
+strata.df[which(indNames(obj.SOG) %in% outlier_samples.id), "repunit"] <- "Burrard"
+#strata.df[which(indNames(obj.SOG) %in% nonoutlier_samples.id), "repunit"] <- "Burrard" # haphazardly selected, for comparison
+
+# Confirms it works:
+indNames(obj.SOG)[which(indNames(obj.SOG) %in% outlier_samples.id)]
+
+# Add strat object to genind
+strata(obj.SOG) <- strata.df
+obj.SOG
+table(strata(obj.SOG))
+
+per_repunit.privallele <- private_alleles(obj.SOG, alleles ~ repunit)
+
+#per_repunit.privallele[, 1:5]
+dim(per_repunit.privallele)
+
+table(per_repunit.privallele["SOG", ])
+table(per_repunit.privallele["Burrard", ])
+
+which(per_repunit.privallele["Burrard", ]==9)
+which(per_repunit.privallele["Burrard", ]==6)
+which(per_repunit.privallele["Burrard", ]==5)
+
+
+# # Get raw number of private alleles per locus
+# pal <- private_alleles(obj.SOG, locus ~ repunit, count.alleles = FALSE)
+# table(pal) # this only gives a 0 or 1, does not count alleles, allows one to see exact how many private alleles exist
+# # per repunit
+# # This shows the number of rows that have a private allele
+# rowSums(pal)
 
 
 #### 05. BC-specific marker test for top FST ####
