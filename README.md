@@ -185,10 +185,13 @@ Copy in the multiple SNP per locus VCF (for individual inbreeding stat):
 Analyze via `ms_harbour_seal/01_scripts/hs_popn_analysis.R`     
 
 In brief, this analysis will:       
-1. Evaluate missing data per individual 
-2. Global analysis (i.e., PCA, FST, dendrogram)
-3. Coast-specific MAF, HWE, PCA, FST
-4. Inter-individual relatedness calculated using Ritland, Wang, and Queller Goodnight metrics
+1. Load data from the genepop; 
+2. Evaluate missing data per individual; 
+3. Global analysis to generate PCA and population-level FST;  
+4. Atlantic coast only, filters (i.e., MAF, HWE, excess HOBS), then PCA, FST, per locus allele freq (myFreq.atl), per locus statistics;     
+5. Inter-individual relatedness calculated using Ritland, Wang, and Queller Goodnight metrics
+
+
 
 ## 4. Analysis of results - relatedness
 Note: must run differentiation analysis first.    

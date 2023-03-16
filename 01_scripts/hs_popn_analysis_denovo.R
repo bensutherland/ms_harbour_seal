@@ -6,9 +6,6 @@
 per_loc_stats.list <- list()
 myFreq.list        <- list()
 
-
-
-
 #### 01. Load data ####
 # Load genepop and characterize
 load_genepop(datatype = "SNP")
