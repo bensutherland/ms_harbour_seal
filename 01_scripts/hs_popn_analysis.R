@@ -51,9 +51,19 @@ calculate_FST(format = "genind", dat = obj, separated = FALSE, bootstrap = TRUE)
 
 #### 03. Coast-specific, Atlantic ####
 obj.sep <- seppop(obj)
-#obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL, obj.sep$LAB) # all pops
-obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL) # balanced, normalized
-obj_atlantic
+
+# Repool based on the dataset
+if(dataset=="all"){
+  
+  # All Atlantic pops being repooled
+  obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL, obj.sep$LAB) # all pops
+  
+}else if(dataset=="balanced"){
+  
+  # 'Balanced' pops being repooled
+  obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL) # balanced, normalized
+  
+}
 
 ## Re-calculate AF to remove low MAF variants
 obj.gl <- gi2gl(gi = obj_atlantic, parallel = T) # Convert to genlight
@@ -101,19 +111,39 @@ head(per_locus_hwe_NFL.df)
 # Which col contains pval? 
 col.oi <- grep(pattern = "Pr", x = colnames(per_locus_hwe_NFL.df))
 
-# Identify mnames of outliers
-hwe_outlier_mname_EQB.vec     <-   per_locus_hwe_EQB.df[per_locus_hwe_EQB.df[, col.oi] < 0.01, "mname"]
-hwe_outlier_mname_NFL.vec    <-    per_locus_hwe_NFL.df[per_locus_hwe_NFL.df[, col.oi] < 0.01, "mname"]
-hwe_outlier_mname_LAB.vec    <-    per_locus_hwe_LAB.df[per_locus_hwe_LAB.df[, col.oi] < 0.01, "mname"]
+# Identify hwe outliers based on the dataset
+if(dataset=="all"){
+  
+  # All Atlantic pops 
+  # Identify mnames of outliers
+  hwe_outlier_mname_EQB.vec     <-   per_locus_hwe_EQB.df[per_locus_hwe_EQB.df[, col.oi] < 0.01, "mname"]
+  hwe_outlier_mname_NFL.vec    <-    per_locus_hwe_NFL.df[per_locus_hwe_NFL.df[, col.oi] < 0.01, "mname"]
+  hwe_outlier_mname_LAB.vec    <-    per_locus_hwe_LAB.df[per_locus_hwe_LAB.df[, col.oi] < 0.01, "mname"]
+  
+  # How many outliers (p < 0.01) per population
+  print(length(hwe_outlier_mname_EQB.vec))   #  173 markers out of HWE
+  print(length(hwe_outlier_mname_NFL.vec))   #  233 markers out of HWE
+  print(length(hwe_outlier_mname_LAB.vec))   #   85 markers out of HWE
+  
+  # How many unique HWE deviating markers?  
+  markers_to_drop <- c(hwe_outlier_mname_EQB.vec, hwe_outlier_mname_NFL.vec, hwe_outlier_mname_LAB.vec)
+  
+}else if(dataset=="balanced"){
+  
+  # 'Balanced' pops
+  # Identify mnames of outliers
+  hwe_outlier_mname_EQB.vec     <-   per_locus_hwe_EQB.df[per_locus_hwe_EQB.df[, col.oi] < 0.01, "mname"]
+  hwe_outlier_mname_NFL.vec    <-    per_locus_hwe_NFL.df[per_locus_hwe_NFL.df[, col.oi] < 0.01, "mname"]
+  
+  # How many outliers (p < 0.01) per population
+  print(length(hwe_outlier_mname_EQB.vec))   #  173 markers out of HWE
+  print(length(hwe_outlier_mname_NFL.vec))   #  233 markers out of HWE
+  
+  # How many unique HWE deviating markers?  
+  markers_to_drop <- c(hwe_outlier_mname_EQB.vec, hwe_outlier_mname_NFL.vec)
+  
+}
 
-# How many outliers (p < 0.01) per population
-length(hwe_outlier_mname_EQB.vec)   #  173 markers out of HWE
-length(hwe_outlier_mname_NFL.vec)   #  233 markers out of HWE
-length(hwe_outlier_mname_LAB.vec)   #   85 markers out of HWE
-
-
-# How many unique HWE deviating markers?  
-markers_to_drop <- c(hwe_outlier_mname_EQB.vec, hwe_outlier_mname_NFL.vec, hwe_outlier_mname_LAB.vec)
 length(markers_to_drop)             # 491 total markers identified
 markers_to_drop <- unique(markers_to_drop)
 length(markers_to_drop)             #  unique markers identified
@@ -266,21 +296,43 @@ head(per_locus_hwe_SOG.df)
 # Identify column with the p-val
 col.oi <- grep(pattern = "Pr", x = colnames(per_locus_hwe_SOG.df))
 
-# Identify mnames of outliers
-hwe_outlier_mname_SOG.vec     <-   per_locus_hwe_SOG.df[per_locus_hwe_SOG.df[, col.oi] < 0.01, "mname"]
-hwe_outlier_mname_NBC.vec    <-    per_locus_hwe_NBC.df[per_locus_hwe_NBC.df[, col.oi] < 0.01, "mname"]
-hwe_outlier_mname_CAL.vec    <-    per_locus_hwe_CAL.df[per_locus_hwe_CAL.df[, col.oi] < 0.01, "mname"]
-hwe_outlier_mname_ORE.vec    <-    per_locus_hwe_ORE.df[per_locus_hwe_ORE.df[, col.oi] < 0.01, "mname"]
+# Identify hwe outliers based on the dataset
+if(dataset=="all"){
+  
+  # All Pacific pops 
+  # Identify mnames of outliers
+  hwe_outlier_mname_SOG.vec     <-   per_locus_hwe_SOG.df[per_locus_hwe_SOG.df[, col.oi] < 0.01, "mname"]
+  hwe_outlier_mname_NBC.vec    <-    per_locus_hwe_NBC.df[per_locus_hwe_NBC.df[, col.oi] < 0.01, "mname"]
+  hwe_outlier_mname_CAL.vec    <-    per_locus_hwe_CAL.df[per_locus_hwe_CAL.df[, col.oi] < 0.01, "mname"]
+  hwe_outlier_mname_ORE.vec    <-    per_locus_hwe_ORE.df[per_locus_hwe_ORE.df[, col.oi] < 0.01, "mname"]
+  
+  # How many outliers (p < 0.01) per population
+  print(length(hwe_outlier_mname_SOG.vec))   #  513 markers out of HWE
+  print(length(hwe_outlier_mname_NBC.vec))   #  155 markers out of HWE
+  print(length(hwe_outlier_mname_CAL.vec))   #  323 markers out of HWE
+  print(length(hwe_outlier_mname_ORE.vec))   #  306 markers out of HWE
+  
+  # How many unique HWE deviating markers?  
+  markers_to_drop <- c(hwe_outlier_mname_SOG.vec, hwe_outlier_mname_NBC.vec, hwe_outlier_mname_CAL.vec, hwe_outlier_mname_ORE.vec)
 
-# How many outliers (p < 0.01) per population
-length(hwe_outlier_mname_SOG.vec)   #  513 markers out of HWE
-length(hwe_outlier_mname_NBC.vec)   #  155 markers out of HWE
-length(hwe_outlier_mname_CAL.vec)   #  323 markers out of HWE
-length(hwe_outlier_mname_ORE.vec)   #  306 markers out of HWE
+}else if(dataset=="balanced"){
+  
+  # 'Balanced' pops
+  # Identify mnames of outliers
+  hwe_outlier_mname_SOG.vec     <-   per_locus_hwe_SOG.df[per_locus_hwe_SOG.df[, col.oi] < 0.01, "mname"]
+  hwe_outlier_mname_ORE.vec    <-    per_locus_hwe_ORE.df[per_locus_hwe_ORE.df[, col.oi] < 0.01, "mname"]
+
+  # How many outliers (p < 0.01) per population
+  print(length(hwe_outlier_mname_SOG.vec))   #  513 markers out of HWE
+  print(length(hwe_outlier_mname_ORE.vec))   #  306 markers out of HWE
+  
+  # How many unique HWE deviating markers?  
+  markers_to_drop <- c(hwe_outlier_mname_SOG.vec, hwe_outlier_mname_ORE.vec)
+
+}
 
 
 # How many unique HWE deviating markers?  
-markers_to_drop <- c(hwe_outlier_mname_SOG.vec, hwe_outlier_mname_NBC.vec, hwe_outlier_mname_CAL.vec, hwe_outlier_mname_ORE.vec)
 length(markers_to_drop)             # 1297 markers out of HWE in at least one population
 markers_to_drop <- unique(markers_to_drop)
 length(markers_to_drop)             #  996 unique markers out of HWE in at least one population
@@ -289,7 +341,6 @@ length(markers_to_keep) # 7937 markers to keep
 
 obj_pacific <- obj_pacific[, loc=markers_to_keep]
 obj_pacific
-
 
 ## Per locus statistics
 per_locus_stats(data = obj_pacific)
@@ -306,7 +357,7 @@ obj_pacific
 # Re-run per loc stats
 per_locus_stats(data = obj_pacific)
 
- # Save for later
+# Save for later
 per_loc_stats_pac.df <- per_loc_stats.df
 
 
@@ -326,7 +377,7 @@ write.csv(x = pca_scores_result, file = "03_results/pca_scores_result.csv", quot
 ## FST
 calculate_FST(format = "genind", dat = obj_pacific, separated = FALSE, bootstrap = TRUE)
 
-#### Relatedness ####
+## Relatedness
 obj_pacific
 
 # Calculate inter-individual relatedness
@@ -335,11 +386,9 @@ relatedness_calc(data = obj_pacific, datatype = "SNP") # will output as "03_resu
 # Explore the data
 head(output$relatedness)
 
-
 # Plot
 relatedness_plot(file = "03_results/kinship_analysis_2023-03-01.Rdata", same_pops = TRUE, plot_by = "codes", pdf_width = 7, pdf_height = 5)
 # It looks like Ritland > 0.1 is outlier for both CACA and SOSO
-
 
 # Plot distribution of relatedness statistics
 pdf(file = "03_results/hist_relatedness_Ritland.pdf", width = 6, height = 3.5)
@@ -351,7 +400,6 @@ text(paste0("median = ", median(output$relatedness$ritland))
 text(paste0("mean = "  , round(mean(output$relatedness$ritland), digits = 3))
      , y = 650, x = 0.15)
 dev.off()
-
 
 # Which pairs have more than 0.25 relatedness using the wang statistic? 
 highly_related.df <- output$relatedness[output$relatedness$ritland >= 0.1, c("ind1.id", "ind2.id", "group", "ritland")]
@@ -369,7 +417,7 @@ write.table(x = highly_related.df, file = "03_results/highly_related_2023-03-01.
 )
 
 
-#### Private Alleles, Burrard Inlet ####
+## Private Alleles, Burrard Inlet
 # Create backup
 #obj_pacific.bck <- obj_pacific 
 #obj_pacific <- obj_pacific.bck
@@ -423,9 +471,15 @@ which(per_repunit.privallele["Burrard", ]==5)
 # rowSums(pal)
 
 
-#### 05. BC-specific marker test for top FST ####
-obj_pacific_filt.sep <- seppop(x = obj_pacific)
+#### 05. Identify top FST markers for several specific BC datasets ####
+##### NBC vs SOG, no Burrard ####
+obj_pacific_filt.sep <- seppop(x = obj_pacific) 
 obj_pacific_filt <- repool(obj_pacific_filt.sep$NBC, obj_pacific_filt.sep$SOG)
+
+# Remove Burrard Inlet outlier individuals
+outlier_samples.id <- c("SOG_108", "SOG_131", "SOG_135", "SOG_115", "SOG_127", "SOG_141", "SOG_125", "SOG_136", "SOG_102")
+keep.inds <- setdiff(indNames(obj_pacific_filt), outlier_samples.id)
+obj_pacific_filt <- obj_pacific_filt[keep.inds]
 
 ## Re-calculate AF to remove low MAF variants
 obj.gl <- gi2gl(gi = obj_pacific_filt, parallel = T) # Convert to genlight
@@ -455,47 +509,137 @@ markers_to_keep <- setdiff(x = locNames(obj_pacific_filt), y = MAF_rem_final)
 obj_pacific_filt <- obj_pacific_filt[, loc=markers_to_keep]
 obj_pacific_filt
 
+# Calculate per-locus FST
+per_locus_stats(data = obj_pacific_filt)
+
+# Save for later
+per_loc_stats_SOG_no_Burrard_v_NBC.df <- per_loc_stats.df
+ 
+
+
+##### ORE vs SOG, no Burrard ####
+obj_pacific_filt <- repool(obj_pacific_filt.sep$ORE, obj_pacific_filt.sep$SOG)
+
+# Remove Burrard Inlet outlier individuals
+outlier_samples.id <- c("SOG_108", "SOG_131", "SOG_135", "SOG_115", "SOG_127", "SOG_141", "SOG_125", "SOG_136", "SOG_102")
+keep.inds <- setdiff(indNames(obj_pacific_filt), outlier_samples.id)
+obj_pacific_filt <- obj_pacific_filt[keep.inds]
+
+## Re-calculate AF to remove low MAF variants
+obj.gl <- gi2gl(gi = obj_pacific_filt, parallel = T) # Convert to genlight
+
+# Calculate frequency of second allele
+myFreq <- glMean(obj.gl)
+
+# Ensure each locus second allele is the minor allele
+for(i in 1:length(myFreq)){
+  
+  if(myFreq[i] > 0.5){
+    
+    myFreq[i] <- 1-myFreq[i]
+    
+  }else{
+    
+    myFreq[i] <- myFreq[i]
+    
+  }
+  
+}
+
+## Final MAF filter
+MAF_rem_final <- names(myFreq[which(myFreq < 0.01)])
+length(MAF_rem_final)
+markers_to_keep <- setdiff(x = locNames(obj_pacific_filt), y = MAF_rem_final)
+obj_pacific_filt <- obj_pacific_filt[, loc=markers_to_keep]
+obj_pacific_filt
 
 # Calculate per-locus FST
 per_locus_stats(data = obj_pacific_filt)
 
 # Save for later
-per_loc_stats_BC.df <- per_loc_stats.df
+per_loc_stats_SOG_no_Burrard_v_ORE.df <- per_loc_stats.df
 
 
-## Compare this to the per-locus stats for Pacific-wide, to see how much overlap
-head(per_loc_stats_BC.df)
-nrow(per_loc_stats_BC.df)
-head(per_loc_stats_pac.df)
-nrow(per_loc_stats_pac.df)
+##### SOG vs. Burrard ####
+obj_pacific_filt <- obj_pacific_filt.sep$SOG
 
-## Merge the all Pacific and the BC-only pops to compare FST per locus
-per_loc_stats_PAC_BC.df <- merge(x = per_loc_stats_pac.df, y = per_loc_stats_BC.df, by = "mname")
-nrow(per_loc_stats_PAC_BC.df)
-head(per_loc_stats_PAC_BC.df)
+# Create separate population for Burrard Inlet outlier individuals
+outlier_samples.id <- c("SOG_108", "SOG_131", "SOG_135", "SOG_115", "SOG_127", "SOG_141", "SOG_125", "SOG_136", "SOG_102")
+
+# Obtain the pop for this object
+SOG_only.vec <- pop(obj_pacific_filt)
+SOG_only.vec <- as.character(SOG_only.vec) # convert to character
+SOG_only.vec[which(indNames(obj_pacific_filt) %in% outlier_samples.id)] <- "BUR" # define the outlier samples as 'BUR'
+SOG_only.vec
+
+pop(obj_pacific_filt) <- SOG_only.vec # Re-assign the population with the new BUR and SOG designations
+indNames(obj_pacific_filt)
+
+obj_pacific_filt
+
+## Re-calculate AF to remove low MAF variants
+obj.gl <- gi2gl(gi = obj_pacific_filt, parallel = T) # Convert to genlight
+
+# Calculate frequency of second allele
+myFreq <- glMean(obj.gl)
+
+# Ensure each locus second allele is the minor allele
+for(i in 1:length(myFreq)){
+  
+  if(myFreq[i] > 0.5){
+    
+    myFreq[i] <- 1-myFreq[i]
+    
+  }else{
+    
+    myFreq[i] <- myFreq[i]
+    
+  }
+  
+}
+
+## Final MAF filter
+MAF_rem_final <- names(myFreq[which(myFreq < 0.01)])
+length(MAF_rem_final)
+markers_to_keep <- setdiff(x = locNames(obj_pacific_filt), y = MAF_rem_final)
+obj_pacific_filt <- obj_pacific_filt[, loc=markers_to_keep]
+obj_pacific_filt
+
+# Calculate per-locus FST
+per_locus_stats(data = obj_pacific_filt)
+
+# Save for later
+per_loc_stats_SOG_vs_Burrard.df <- per_loc_stats.df
 
 
-pdf(file = "03_results/per_locus_FST_HOBS_all_Pacific_or_BC.pdf", width = 8, height = 3.5)
+##### Comparing data together ##### 
+head(per_loc_stats_SOG_no_Burrard_v_ORE.df)
+head(per_loc_stats_SOG_vs_Burrard.df)
+head(per_loc_stats_SOG_no_Burrard_v_NBC.df)
+
+SOG_versus_no_burrard.df <- merge(x = per_loc_stats_SOG_no_Burrard_v_NBC.df, per_loc_stats_SOG_no_Burrard_v_ORE.df, by = "mname")
+pdf(file = "03_results/FST_HOBS_SOG_v_ORE_or_NBC.pdf", width = 9, height = 5)
 par(mfrow=c(1,2))
-plot(per_loc_stats_PAC_BC.df$Fst.x, per_loc_stats_PAC_BC.df$Fst.y
-     , xlab = "per locus FST, all Pacific", ylab = "per locus FST, BC only"
+plot(x = SOG_versus_no_burrard.df$Fst.x, y = SOG_versus_no_burrard.df$Fst.y
+     , xlab = "Fst SOG (outliers excl.) vs. NBC"
+     , ylab = "Fst SOG (outliers excl.) vs. ORE"
+     , las = 1
      )
-plot(per_loc_stats_PAC_BC.df$Hobs.x, per_loc_stats_PAC_BC.df$Hobs.y
-     , xlab = "per locus HOBS, all Pacific", ylab = "per locus HOBS, BC only"
-     )
-dev.off()
+text(x = 0.6, y = 0.5, labels = paste0("n = ", nrow(SOG_versus_no_burrard.df)))
 
-#### Note: we could also do a US only one too... ###
+plot(x = SOG_versus_no_burrard.df$Hobs.x, y = SOG_versus_no_burrard.df$Hobs.y
+     , xlab = "Hobs SOG (outliers excl.) vs. NBC"
+     , ylab = "Hobs SOG (outliers excl.) vs. ORE"
+     , las = 1
+)
+dev.off()
 
 
 ### 06. Multi-coast plotting ####
-
 ## MAF
 # Remove the HWE-filtered variants
 myFreq.pac <- myFreq.pac[names(myFreq.pac) %in% locNames(obj_pacific)]
 myFreq.atl <- myFreq.atl[names(myFreq.atl) %in% locNames(obj_atlantic)]
-
-#### SHORTCUT PLOTTING HERE ####
 
 table(myFreq.pac < 0.1)
 table(myFreq.atl < 0.1)
@@ -503,8 +647,11 @@ table(myFreq.atl < 0.1)
 length(myFreq.pac)
 length(myFreq.atl)
 
-table(myFreq.pac < 0.05)[2] / length(myFreq.pac)
-table(myFreq.atl < 0.05)[2] / length(myFreq.atl)
+table(myFreq.pac < 0.1)[2] / length(myFreq.pac) # 57.9%
+table(myFreq.atl < 0.1)[2] / length(myFreq.atl) # 47.9%
+
+table(myFreq.pac < 0.05)[2] / length(myFreq.pac) # 37.0%
+table(myFreq.atl < 0.05)[2] / length(myFreq.atl) # 31.0%
 
 
 # Plot
@@ -530,12 +677,8 @@ hist(myFreq.atl
      , las = 1
      , breaks = 20
 )
-text(x = 0.4, y = 1000, labels = paste("n = ", length(myFreq.atl), " loci", sep = "" ))
+text(x = 0.4, y = 250, labels = paste("n = ", length(myFreq.atl), " loci", sep = "" ))
 dev.off()
-
-#### TODO: do not plot with set ylim to be able to see the distribution independent of total markers ####
-### Add text of % markers with 0.01 < MAF < 0.05
-### Get same plot from the denovo, with the values as well
 
 # Save out the MAF calculation as a table
 myFreq.pac <- round(myFreq.pac, digits = 3)
@@ -550,30 +693,7 @@ write.table(x = myFreq.atl, file = "03_results/allele_freq_retained_loci_atl.txt
             , row.names = T, col.names = F
 )
 
-### HOBS
-# Plot marker HOB
-pdf(file = paste0("03_results/HOBS_hist_pac_atl.pdf"), width = 7, height = 4)
-par(mfrow=c(1,2))
-hist(per_loc_stats_pac.df$Hobs
-     , ylim = c(0,1750)
-     , main = ""
-     , las = 1
-     , xlab = "Hobs, Pacific"
-       )
-
-hist(per_loc_stats_atl.df$Hobs
-     , ylim = c(0,1750)
-     , main = ""
-     , las = 1
-     , xlab = "Hobs, Atlantic"
-     )
-
-dev.off()
 
 #### 0.4 Export ####
 # Write out object
 save.image(file = "03_results/completed_analysis.RData")
-
-
-
-
