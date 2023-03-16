@@ -2,9 +2,9 @@
 # 2020-10-13 initialized
 # start by sourcing simple_pop_stats then quit the menu
 
-# Set flag, using balanced or all data? 
+# Set flag, using all data or 'balanced' (limited)?  
 dataset <- "all"
-#dataset <- "balanced"
+#dataset <- "balanced" # only has two populations per region
 
 #### 01. Load data and check missing per ind ####
 # Load genepop and characterize
@@ -13,7 +13,6 @@ load_genepop(datatype = "SNP")
 ## file sources: 
 # all populations, here:  "02_input_data/bhs_p7_r0.7_maf0.01_2023-02-28.gen"
 # balanced and normalized here: "02_input_data/bhs_p4_r0.7_maf0.01_2023-03-04.gen" 
-
 
 # Clean up pop names
 pop(obj) <- gsub(pattern = "_.*", replacement = "", x = pop(obj))
@@ -48,9 +47,6 @@ write.csv(x = pca_scores_result, file = "03_results/pca_scores_result.csv", quot
 
 ## FST
 calculate_FST(format = "genind", dat = obj, separated = FALSE, bootstrap = TRUE)
-
-# Make a dendrogram
-make_tree(bootstrap = TRUE, boot_obj = obj, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
 
 
 #### 03. Coast-specific, Atlantic ####
