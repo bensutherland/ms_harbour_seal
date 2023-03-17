@@ -611,6 +611,18 @@ per_locus_stats(data = obj_pacific_filt)
 # Save for later
 per_loc_stats_SOG_vs_Burrard.df <- per_loc_stats.df
 
+##### Per region HOBS ##### 
+names(obj_pacific_filt.sep)
+# Inspect HOBS for BC inds
+obj <- repool(obj_pacific_filt.sep$SOG, obj_pacific_filt.sep$NBC)
+per_locus_stats(data = obj)
+per_loc_stats_BC.df <- per_loc_stats.df
+
+# Inspect HOBS for US inds
+obj <- repool(obj_pacific_filt.sep$ORE, obj_pacific_filt.sep$CAL)
+per_locus_stats(data = obj)
+per_loc_stats_US.df <- per_loc_stats.df
+
 
 ##### Comparing data together ##### 
 head(per_loc_stats_SOG_no_Burrard_v_ORE.df)
@@ -618,20 +630,24 @@ head(per_loc_stats_SOG_vs_Burrard.df)
 head(per_loc_stats_SOG_no_Burrard_v_NBC.df)
 
 SOG_versus_no_burrard.df <- merge(x = per_loc_stats_SOG_no_Burrard_v_NBC.df, per_loc_stats_SOG_no_Burrard_v_ORE.df, by = "mname")
-pdf(file = "03_results/FST_HOBS_SOG_v_ORE_or_NBC.pdf", width = 9, height = 5)
+
+BC_and_US_sp_HOBS.df <- merge(x = per_loc_stats_BC.df, y = per_loc_stats_US.df, by = "mname")
+
+pdf(file = "03_results/FST_and_HOBS_region-specific.pdf", width = 9, height = 5)
 par(mfrow=c(1,2))
 plot(x = SOG_versus_no_burrard.df$Fst.x, y = SOG_versus_no_burrard.df$Fst.y
-     , xlab = "Fst SOG (outliers excl.) vs. NBC"
-     , ylab = "Fst SOG (outliers excl.) vs. ORE"
+     , xlab = expression(italic(F)[ST] ~ SOG ~ vs. ~ NBC)
+     , ylab = expression(italic(F)[ST] ~ SOG ~ vs. ~ ORE)
      , las = 1
      )
 text(x = 0.6, y = 0.5, labels = paste0("n = ", nrow(SOG_versus_no_burrard.df)))
 
-plot(x = SOG_versus_no_burrard.df$Hobs.x, y = SOG_versus_no_burrard.df$Hobs.y
-     , xlab = "Hobs SOG (outliers excl.) vs. NBC"
-     , ylab = "Hobs SOG (outliers excl.) vs. ORE"
+plot(x = BC_and_US_sp_HOBS.df$Hobs.x, y = BC_and_US_sp_HOBS.df$Hobs.y
+     , xlab = expression(per ~ locus ~ H[OBS] ~ (SOG ~ and ~ NBC))
+     , ylab = expression(per ~ locus ~ H[OBS] ~ (ORE ~ and ~ CAL))
      , las = 1
-)
+     )
+
 dev.off()
 
 
