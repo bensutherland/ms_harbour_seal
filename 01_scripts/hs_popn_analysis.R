@@ -48,6 +48,9 @@ write.csv(x = pca_scores_result, file = "03_results/pca_scores_result.csv", quot
 ## FST
 calculate_FST(format = "genind", dat = obj, separated = FALSE, bootstrap = TRUE)
 
+## Dendrogram
+make_tree(boot_obj = obj, bootstrap = TRUE, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
+
 
 #### 03. Coast-specific, Atlantic ####
 obj.sep <- seppop(obj)
@@ -256,7 +259,7 @@ if(dataset=="all"){
 ## Re-calculate AF to remove low MAF variants
 obj.gl <- gi2gl(gi = obj_pacific, parallel = T) # Convert to genlight
 
-# Calculate frequency of second allele
+# Calculate global frequency of second allele
 myFreq <- glMean(obj.gl)
 
 # Ensure each locus second allele is the minor allele
