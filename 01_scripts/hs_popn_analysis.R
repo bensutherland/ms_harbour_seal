@@ -31,26 +31,29 @@ sd(missing_data.df$ind.per.missing)       # sd: 3.0%
 
 
 #### 02. Global PCA, FST, dendrogram ####
-# note: have not removed HWE outliers yet, ok?  (#TODO#)
-## PCA
-pca_from_genind(data = obj
-                , PCs_ret = 4
-                , plot_eigen = TRUE
-                , plot_allele_loadings = TRUE
-                , retain_pca_obj = TRUE
-                , colour_file = "00_archive/harbour_seal_pops_colours.csv"
-)
 
-# Manually run pca_from_genind to pull out the pca1 obj (note: should assign this out to the global enviro as default)
-pca_scores_result <- pca.obj$scores
-write.csv(x = pca_scores_result, file = "03_results/pca_scores_result.csv", quote = F, row.names = T)
-
-## FST
-calculate_FST(format = "genind", dat = obj, separated = FALSE, bootstrap = TRUE)
-
-## Dendrogram
-make_tree(boot_obj = obj, bootstrap = TRUE, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
-
+# #### Note: will do this after identifying HWE and related outliers ####
+# # note: have not removed HWE outliers yet, ok?  (#TODO#)
+# ## PCA
+# pca_from_genind(data = obj
+#                 , PCs_ret = 4
+#                 , plot_eigen = TRUE
+#                 , plot_allele_loadings = TRUE
+#                 , retain_pca_obj = TRUE
+#                 , colour_file = "00_archive/harbour_seal_pops_colours.csv"
+# )
+# 
+# # Manually run pca_from_genind to pull out the pca1 obj (note: should assign this out to the global enviro as default)
+# pca_scores_result <- pca.obj$scores
+# write.csv(x = pca_scores_result, file = "03_results/pca_scores_result.csv", quote = F, row.names = T)
+# 
+# ## FST
+# calculate_FST(format = "genind", dat = obj, separated = FALSE, bootstrap = TRUE)
+# 
+# ## Dendrogram
+# make_tree(boot_obj = obj, bootstrap = TRUE, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
+# 
+# #### /END/ Note: will do this after identifying HWE and related outliers ####
 
 #### 03. Coast-specific, Atlantic ####
 obj.sep <- seppop(obj)
@@ -106,7 +109,82 @@ length(myFreq) # should match the number of variants kept in obj_atlantic
 myFreq.atl <- myFreq
 rm(myFreq)
 
+## Run PCA to view sample relationships in PCA prior to removal of putative relatives
+pca_from_genind(data = obj_atlantic
+                , PCs_ret = 4
+                , plot_eigen = TRUE
+                , plot_allele_loadings = TRUE
+                , retain_pca_obj = TRUE
+                , colour_file = "00_archive/harbour_seal_pops_colours.csv"
+)
 
+# Rename so the PCA figures are not overwritten
+file.copy(from = "03_results/pca_samples_PC1_v_PC2.pdf", to = "03_results/pca_samples_PC1_v_PC2_atl_all_inds.pdf")
+file.copy(from = "03_results/pca_samples_PC3_v_PC4.pdf", to = "03_results/pca_samples_PC3_v_PC4_atl_all_inds.pdf")
+
+# Retain and save out the PCA scores
+pca_scores_result <- pca.obj$scores
+write.csv(x = pca_scores_result, file = "03_results/pca_scores_result_atlantic_w_relatives.csv", quote = F, row.names = T)
+
+## Identify putative close relatives for removal using relatedness
+# Calculate inter-individual relatedness
+relatedness_calc(data = obj_atlantic, datatype = "SNP") # will output as "03_results/kinship_analysis_<date>.Rdata"
+# Retain result
+date <- format(Sys.time(), "%Y-%m-%d")
+file.copy(from = paste0("03_results/kinship_analysis_", date, ".Rdata"), to = paste0("03_results/kinship_analysis_atl_", date, ".Rdata"))
+
+
+# Plot
+relatedness_plot(file = paste0("03_results/kinship_analysis_atl_", date, ".Rdata"), same_pops = TRUE, plot_by = "codes", pdf_width = 7, pdf_height = 5)
+file.copy(from = paste0("03_results/relatedness_ritland_", date, ".pdf"), to = paste0("03_results/relatedness_ritland_atl_", date, ".pdf"), overwrite = T)
+file.copy(from = paste0("03_results/relatedness_quellergt_", date, ".pdf"), to = paste0("03_results/relatedness_quellergt_atl_", date, ".pdf"), overwrite = T)
+file.copy(from = paste0("03_results/relatedness_wang_", date, ".pdf"), to = paste0("03_results/relatedness_wang_atl_", date, ".pdf"), overwrite = T)
+
+stop()
+### This exploration is now done in hs_inspect_related_output.R and excel, using the file "pairwise_relatedness_output_all_<date>.txt"
+
+
+# # Plot distribution of relatedness statistics
+# pdf(file = "03_results/hist_relatedness_Ritland.pdf", width = 6, height = 3.5)
+# par(mfrow=c(1,1))
+# hist(output$relatedness$ritland, main = "", xlab = "relatedness (Ritland)", las = 1)
+# abline(v = 0.1, lty = 3)
+# text(paste0("median = ", median(output$relatedness$ritland))
+#      , y = 600, x = 0.15)
+# text(paste0("mean = "  , round(mean(output$relatedness$ritland), digits = 3))
+#      , y = 450, x = 0.15)
+# dev.off()
+# 
+# 
+# # Which pairs have high relatedness using the ritland statistic?
+# highly_related.df <- output$relatedness[output$relatedness$ritland >= 0.1, c("ind1.id", "ind2.id", "group", "ritland")]
+# nrow(highly_related.df) # 17
+# highly_related.df
+# 
+# # How many individuals does this involve that are highly related?
+# length(unique(x = c(highly_related.df$ind1.id, highly_related.df$ind2.id)))
+# 
+# # How many individuals does this involve?
+# length(unique(x = c(output$relatedness$ind1.id, output$relatedness$ind2.id)))
+# 
+# write.table(x = highly_related.df, file = "03_results/highly_related_2023-03-01.csv", quote = F, sep = ","
+#             , row.names = F
+# )
+### /END/ This exploration is now done in excel, using the file "pairwise_relatedness_output_all_<date>.txt"
+
+#### /END/ ID relatives
+
+
+
+
+
+
+# Drop selected individuals
+inds.to.drop <- 
+
+  
+  
+  
 ## HWE filter
 hwe_eval(data = obj_atlantic, alpha = 0.01)
 head(per_locus_hwe_NFL.df)
@@ -194,47 +272,7 @@ write.csv(x = pca_scores_result, file = "03_results/pca_scores_result_atlantic.c
 ## FST
 calculate_FST(format = "genind", dat = obj_atlantic, separated = FALSE, bootstrap = TRUE)
 
-## Relatedness
-obj_atlantic
 
-# Calculate inter-individual relatedness
-relatedness_calc(data = obj_atlantic, datatype = "SNP") # will output as "03_results/kinship_analysis_<date>.Rdata"
-
-# Explore the data
-head(output$relatedness)
-
-
-# Plot
-relatedness_plot(file = "03_results/kinship_analysis_2023-03-01.Rdata", same_pops = TRUE, plot_by = "codes", pdf_width = 7, pdf_height = 5)
-# It looks like Ritland > 0.1 is outlier 
-
-
-# Plot distribution of relatedness statistics
-pdf(file = "03_results/hist_relatedness_Ritland.pdf", width = 6, height = 3.5)
-par(mfrow=c(1,1))
-hist(output$relatedness$ritland, main = "", xlab = "relatedness (Ritland)", las = 1)
-abline(v = 0.1, lty = 3)
-text(paste0("median = ", median(output$relatedness$ritland))
-     , y = 600, x = 0.15)
-text(paste0("mean = "  , round(mean(output$relatedness$ritland), digits = 3))
-     , y = 450, x = 0.15)
-dev.off()
-
-
-# Which pairs have high relatedness using the ritland statistic? 
-highly_related.df <- output$relatedness[output$relatedness$ritland >= 0.1, c("ind1.id", "ind2.id", "group", "ritland")]
-nrow(highly_related.df) # 17
-highly_related.df
-
-# How many individuals does this involve that are highly related? 
-length(unique(x = c(highly_related.df$ind1.id, highly_related.df$ind2.id)))
-
-# How many individuals does this involve? 
-length(unique(x = c(output$relatedness$ind1.id, output$relatedness$ind2.id)))
-
-write.table(x = highly_related.df, file = "03_results/highly_related_2023-03-01.csv", quote = F, sep = ","
-            , row.names = F
-)
 
 
 # Move all results into an 'Atlantic' folder, then proceed to Pacific analysis
