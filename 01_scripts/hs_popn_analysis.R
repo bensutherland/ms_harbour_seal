@@ -30,32 +30,7 @@ summary(missing_data.df$ind.per.missing)  # max: 0.127 (12.7%); mean: 2.9%
 sd(missing_data.df$ind.per.missing)       # sd: 3.0%
 
 
-#### 02. Global PCA, FST, dendrogram ####
-
-# #### Note: will do this after identifying HWE and related outliers ####
-# # note: have not removed HWE outliers yet, ok?  (#TODO#)
-# ## PCA
-# pca_from_genind(data = obj
-#                 , PCs_ret = 4
-#                 , plot_eigen = TRUE
-#                 , plot_allele_loadings = TRUE
-#                 , retain_pca_obj = TRUE
-#                 , colour_file = "00_archive/harbour_seal_pops_colours.csv"
-# )
-# 
-# # Manually run pca_from_genind to pull out the pca1 obj (note: should assign this out to the global enviro as default)
-# pca_scores_result <- pca.obj$scores
-# write.csv(x = pca_scores_result, file = "03_results/pca_scores_result.csv", quote = F, row.names = T)
-# 
-# ## FST
-# calculate_FST(format = "genind", dat = obj, separated = FALSE, bootstrap = TRUE)
-# 
-# ## Dendrogram
-# make_tree(boot_obj = obj, bootstrap = TRUE, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
-# 
-# #### /END/ Note: will do this after identifying HWE and related outliers ####
-
-#### 03. Coast-specific, Atlantic ####
+#### 02. Coast-specific analyses ####
 obj.sep <- seppop(obj)
 
 # Repool based on the dataset
