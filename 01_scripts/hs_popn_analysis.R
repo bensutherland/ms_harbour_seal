@@ -119,8 +119,8 @@ pca_from_genind(data = obj_atlantic
 )
 
 # Rename so the PCA figures are not overwritten
-file.copy(from = "03_results/pca_samples_PC1_v_PC2.pdf", to = "03_results/pca_samples_PC1_v_PC2_atl_all_inds.pdf")
-file.copy(from = "03_results/pca_samples_PC3_v_PC4.pdf", to = "03_results/pca_samples_PC3_v_PC4_atl_all_inds.pdf")
+file.copy(from = "03_results/pca_samples_PC1_v_PC2.pdf", to = "03_results/pca_samples_PC1_v_PC2_atl_all_inds.pdf", overwrite = TRUE)
+file.copy(from = "03_results/pca_samples_PC3_v_PC4.pdf", to = "03_results/pca_samples_PC3_v_PC4_atl_all_inds.pdf", overwrite = TRUE)
 
 # Retain and save out the PCA scores
 pca_scores_result <- pca.obj$scores
@@ -143,6 +143,7 @@ file.copy(from = paste0("03_results/relatedness_wang_", date, ".pdf"), to = past
 stop()
 ### This exploration is now done in hs_inspect_related_output.R and excel, using the file "pairwise_relatedness_output_all_<date>.txt"
 
+### TODO: SHOULD SAVE OUT AND LOAD IN SUBSEQUENT FILE ###
 
 # # Plot distribution of relatedness statistics
 # pdf(file = "03_results/hist_relatedness_Ritland.pdf", width = 6, height = 3.5)
@@ -175,15 +176,17 @@ stop()
 #### /END/ ID relatives
 
 
-
-
-
-
+##### NEXT SCRIPT ####
 # Drop selected individuals
-inds.to.drop <- 
+inds.to.drop <- c("EQB_103", "EQB_104", "EQB_116", "EQB_117", "EQB_118", "EQB_120"
+                  , "NFL_103", "NFL_111", "NFL_114", "NFL_120", "NFL_123", "NFL_119", "NFL_124", "NFL_122"
+                  , "LAB_105", "LAB_103"
+                  )
 
-  
-  
+keep.inds <- setdiff(x = indNames(obj_atlantic), y = inds.to.drop)
+#obj_atlantic.bck <- obj_atlantic
+obj_atlantic <- obj_atlantic[keep.inds]
+
   
 ## HWE filter
 hwe_eval(data = obj_atlantic, alpha = 0.01)
@@ -266,16 +269,19 @@ pca_from_genind(data = obj_atlantic
 
 # Manually run pca_from_genind to pull out the pca1 obj (note: should assign this out to the global enviro as default)
 pca_scores_result <- pca.obj$scores
-write.csv(x = pca_scores_result, file = "03_results/pca_scores_result_atlantic.csv", quote = F, row.names = T)
+write.csv(x = pca_scores_result, file = "03_results/pca_scores_result_atlantic_relatives_rem.csv", quote = F, row.names = T)
+
+# Rename so the PCA figures are not overwritten
+file.copy(from = "03_results/pca_samples_PC1_v_PC2.pdf", to = "03_results/pca_samples_PC1_v_PC2_atl_relatives_rem.pdf", overwrite = TRUE)
+file.copy(from = "03_results/pca_samples_PC3_v_PC4.pdf", to = "03_results/pca_samples_PC3_v_PC4_atl_relatives_rem.pdf", overwrite = TRUE)
+
 
 
 ## FST
 calculate_FST(format = "genind", dat = obj_atlantic, separated = FALSE, bootstrap = TRUE)
 
-
-
-
 # Move all results into an 'Atlantic' folder, then proceed to Pacific analysis
+
 
 
 #### 04. Coast-specific, Pacific ####
