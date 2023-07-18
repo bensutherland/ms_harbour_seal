@@ -3,6 +3,7 @@
 #  within populations that can be reasonably used as cutoffs
 
 # Run after running sections of hs_popn_analysis (and therefore are in active simple_pop_stats repo)
+#  if starting again from here, need to launch simple_pop_stats
 
 # Clear space
 gc()
@@ -14,8 +15,13 @@ input.FN <- "03_results/pairwise_relatedness_output_all_2023-07-15.txt" # Atlant
 rel.df <- read.table(file = input.FN, header = T, sep = "\t")
 head(rel.df)
 
+# These are the contrasts in this data
+unique(rel.df$group)
+
 # Set variables of interest
-popn <- "EQB"
+#popn <- "EQB"
+#popn <- "NFL"
+popn <- "LAB"
 
 compare.group <- paste0(substr(x = popn, 1,2), substr(x = popn, 1,2))
 
