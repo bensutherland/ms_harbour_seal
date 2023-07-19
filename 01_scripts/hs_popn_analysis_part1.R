@@ -113,6 +113,7 @@ relatedness_plot(file = paste0("03_results/kinship_analysis_atl_", date, ".Rdata
 file.copy(from = paste0("03_results/relatedness_ritland_", date, ".pdf"), to = paste0("03_results/relatedness_ritland_atl_", date, ".pdf"), overwrite = T)
 file.copy(from = paste0("03_results/relatedness_quellergt_", date, ".pdf"), to = paste0("03_results/relatedness_quellergt_atl_", date, ".pdf"), overwrite = T)
 file.copy(from = paste0("03_results/relatedness_wang_", date, ".pdf"), to = paste0("03_results/relatedness_wang_atl_", date, ".pdf"), overwrite = T)
+file.copy(from = paste0("03_results/pairwise_relatedness_output_all_", date, ".txt"), to = paste0("03_results/pairwise_relatedness_output_all_atl_", date, ".txt"))
 
 # Calculate inter-individual relatedness
 relatedness_calc(data = obj_pacific, datatype = "SNP") # will output as "03_results/kinship_analysis_<date>.Rdata"
@@ -124,7 +125,7 @@ relatedness_plot(file = paste0("03_results/kinship_analysis_pac_", date, ".Rdata
 file.copy(from = paste0("03_results/relatedness_ritland_", date, ".pdf"), to = paste0("03_results/relatedness_ritland_pac_", date, ".pdf"), overwrite = T)
 file.copy(from = paste0("03_results/relatedness_quellergt_", date, ".pdf"), to = paste0("03_results/relatedness_quellergt_pac_", date, ".pdf"), overwrite = T)
 file.copy(from = paste0("03_results/relatedness_wang_", date, ".pdf"), to = paste0("03_results/relatedness_wang_pac_", date, ".pdf"), overwrite = T)
-
+file.copy(from = paste0("03_results/pairwise_relatedness_output_all_", date, ".txt"), to = paste0("03_results/pairwise_relatedness_output_all_pac_", date, ".txt"))
 
 save.image("03_results/output_coast-sp_relatedness.Rdata")
 
