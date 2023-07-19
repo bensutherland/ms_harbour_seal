@@ -8,8 +8,11 @@
 # Clear space
 gc()
 
-# Set variables
-input.FN <- "03_results/pairwise_relatedness_output_all_2023-07-15.txt" # Atlantic analysis
+date
+
+# Choose one of the following two input datasets (Atlantic or Pacific)
+input.FN <- paste0("03_results/pairwise_relatedness_output_all_atl_", date, ".txt") # Atlantic analysis
+input.FN <- paste0("03_results/pairwise_relatedness_output_all_pac_", date, ".txt") # Pacific analysis
 
 # Read in data
 rel.df <- read.table(file = input.FN, header = T, sep = "\t")
@@ -21,7 +24,12 @@ unique(rel.df$group)
 # Set variables of interest
 #popn <- "EQB"
 #popn <- "NFL"
-popn <- "LAB"
+#popn <- "LAB"
+
+#popn <- "CAL"
+#popn <- "NBC"
+#popn <- "ORE"
+#popn <- "SOG"
 
 compare.group <- paste0(substr(x = popn, 1,2), substr(x = popn, 1,2))
 
