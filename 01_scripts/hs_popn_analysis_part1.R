@@ -31,6 +31,7 @@ sd(missing_data.df$ind.per.missing)       # sd: 3.0%
 
 
 #### 02. Coast-specific analyses ####
+## Separate populations
 obj.sep <- seppop(obj)
 
 ## Repool based on the dataset
