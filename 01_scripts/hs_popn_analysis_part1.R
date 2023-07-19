@@ -1,4 +1,4 @@
-# General analysis of harbour seal data
+# General analysis of harbour seal data (Part 1)
 # 2020-10-13 initialized
 # start by sourcing simple_pop_stats then quit the menu
 
@@ -127,4 +127,4 @@ file.copy(from = paste0("03_results/relatedness_wang_", date, ".pdf"), to = past
 
 save.image("03_results/output_coast-sp_relatedness.Rdata")
 
-### Move to next script (hs_popn_analysis_part_2.R)
+### Move to next script (hs_inspect_outlier_output.R) then following (hs_popn_analysis_part_2.R)
