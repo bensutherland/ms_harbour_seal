@@ -33,58 +33,40 @@ sd(missing_data.df$ind.per.missing)       # sd: 3.0%
 #### 02. Coast-specific analyses ####
 obj.sep <- seppop(obj)
 
-# Repool based on the dataset
+## Repool based on the dataset
 if(dataset=="all"){
   
   # All Atlantic pops being repooled
-  obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL, obj.sep$LAB) # all pops
+  obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL, obj.sep$LAB)
+  
+  # All Pacific pops being repooled
+  obj_pacific  <- repool(obj.sep$NBC, obj.sep$SOG, obj.sep$ORE, obj.sep$CAL)
   
 }else if(dataset=="balanced"){
   
-  # 'Balanced' pops being repooled
-  obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL) # balanced, normalized
+  # 'Balanced' Atlantic pops being repooled
+  obj_atlantic <- repool(obj.sep$EQB, obj.sep$NFL)
+  
+  # 'Balanced' Pacific pops being repooled
+  obj_pacific <- repool(obj.sep$SOG, obj.sep$ORE)
   
 }
+
+obj_atlantic
+obj_pacific
+
 
 ## Re-calculate AF to remove low MAF variants
-obj.gl <- gi2gl(gi = obj_atlantic, parallel = T) # Convert to genlight
-
-# Calculate frequency of second allele
-myFreq <- glMean(obj.gl)
-
-# Ensure each locus second allele is the minor allele
-for(i in 1:length(myFreq)){
-  
-  # if the second allele is > 0.5, this would be considered the major allele, and so calculate the minor allele frequency
-  if(myFreq[i] > 0.5){
-    
-    myFreq[i] <- 1-myFreq[i]
-    
-  }else{
-    
-    myFreq[i] <- myFreq[i]
-    
-  }
-  
-}
-
-## MAF filter
-MAF_rem_final <- names(myFreq[which(myFreq < 0.01)])
-length(MAF_rem_final)
-markers_to_keep <- setdiff(x = locNames(obj_atlantic), y = MAF_rem_final)
-length(markers_to_keep)
-obj_atlantic <- obj_atlantic[, loc=markers_to_keep]
-obj_atlantic
-
-# Keep AF of only the retained variants
-myFreq <- myFreq[which(myFreq >= 0.01)]
-length(myFreq) # should match the number of variants kept in obj_atlantic
-
-# Save
+maf_filt(data = obj_atlantic, maf = 0.01)
+obj_atlantic <- obj_maf_filt
 myFreq.atl <- myFreq
-rm(myFreq)
 
-## Run PCA to view sample relationships in PCA prior to removal of putative relatives
+maf_filt(data = obj_pacific, maf = 0.01)
+obj_pacific <- obj_maf_filt
+myFreq.pac <- myFreq
+
+
+## Run PCA to view sample relationships in PCA prior to pruning putative relatives
 pca_from_genind(data = obj_atlantic
                 , PCs_ret = 4
                 , plot_eigen = TRUE
@@ -101,19 +83,52 @@ file.copy(from = "03_results/pca_samples_PC3_v_PC4.pdf", to = "03_results/pca_sa
 pca_scores_result <- pca.obj$scores
 write.csv(x = pca_scores_result, file = "03_results/pca_scores_result_atlantic_w_relatives.csv", quote = F, row.names = T)
 
+
+pca_from_genind(data = obj_pacific
+                , PCs_ret = 4
+                , plot_eigen = TRUE
+                , plot_allele_loadings = TRUE
+                , retain_pca_obj = TRUE
+                , colour_file = "00_archive/harbour_seal_pops_colours.csv"
+)
+
+# Rename so the PCA figures are not overwritten
+file.copy(from = "03_results/pca_samples_PC1_v_PC2.pdf", to = "03_results/pca_samples_PC1_v_PC2_pac_all_inds.pdf", overwrite = TRUE)
+file.copy(from = "03_results/pca_samples_PC3_v_PC4.pdf", to = "03_results/pca_samples_PC3_v_PC4_pac_all_inds.pdf", overwrite = TRUE)
+
+# Retain and save out the PCA scores
+pca_scores_result <- pca.obj$scores
+write.csv(x = pca_scores_result, file = "03_results/pca_scores_result_pacific_w_relatives.csv", quote = F, row.names = T)
+
+
 ## Identify putative close relatives for removal using relatedness
 # Calculate inter-individual relatedness
 relatedness_calc(data = obj_atlantic, datatype = "SNP") # will output as "03_results/kinship_analysis_<date>.Rdata"
-# Retain result
 date <- format(Sys.time(), "%Y-%m-%d")
 file.copy(from = paste0("03_results/kinship_analysis_", date, ".Rdata"), to = paste0("03_results/kinship_analysis_atl_", date, ".Rdata"))
-
 
 # Plot
 relatedness_plot(file = paste0("03_results/kinship_analysis_atl_", date, ".Rdata"), same_pops = TRUE, plot_by = "codes", pdf_width = 7, pdf_height = 5)
 file.copy(from = paste0("03_results/relatedness_ritland_", date, ".pdf"), to = paste0("03_results/relatedness_ritland_atl_", date, ".pdf"), overwrite = T)
 file.copy(from = paste0("03_results/relatedness_quellergt_", date, ".pdf"), to = paste0("03_results/relatedness_quellergt_atl_", date, ".pdf"), overwrite = T)
 file.copy(from = paste0("03_results/relatedness_wang_", date, ".pdf"), to = paste0("03_results/relatedness_wang_atl_", date, ".pdf"), overwrite = T)
+
+# Calculate inter-individual relatedness
+relatedness_calc(data = obj_pacific, datatype = "SNP") # will output as "03_results/kinship_analysis_<date>.Rdata"
+date <- format(Sys.time(), "%Y-%m-%d")
+file.copy(from = paste0("03_results/kinship_analysis_", date, ".Rdata"), to = paste0("03_results/kinship_analysis_pac_", date, ".Rdata"))
+
+# Plot
+relatedness_plot(file = paste0("03_results/kinship_analysis_pac_", date, ".Rdata"), same_pops = TRUE, plot_by = "codes", pdf_width = 7, pdf_height = 5)
+file.copy(from = paste0("03_results/relatedness_ritland_", date, ".pdf"), to = paste0("03_results/relatedness_ritland_pac_", date, ".pdf"), overwrite = T)
+file.copy(from = paste0("03_results/relatedness_quellergt_", date, ".pdf"), to = paste0("03_results/relatedness_quellergt_pac_", date, ".pdf"), overwrite = T)
+file.copy(from = paste0("03_results/relatedness_wang_", date, ".pdf"), to = paste0("03_results/relatedness_wang_pac_", date, ".pdf"), overwrite = T)
+
+
+save.image("03_results/output_coast-sp_relatedness.Rdata")
+
+
+
 
 stop()
 ### This exploration is now done in hs_inspect_related_output.R and excel, using the file "pairwise_relatedness_output_all_<date>.txt"
@@ -260,20 +275,6 @@ calculate_FST(format = "genind", dat = obj_atlantic, separated = FALSE, bootstra
 
 
 #### 04. Coast-specific, Pacific ####
-obj.sep <- seppop(obj)
-
-# Repool based on the dataset
-if(dataset=="all"){
- 
-  # All Pacific pops being repooled
-  obj_pacific <- repool(obj.sep$NBC, obj.sep$SOG, obj.sep$ORE, obj.sep$CAL) 
-  
-}else if(dataset=="balanced"){
-  
-  # 'Balanced' pops being repooled
-  obj_pacific <- repool(obj.sep$SOG, obj.sep$ORE)
-    
-}
 
 ## Re-calculate AF to remove low MAF variants
 obj.gl <- gi2gl(gi = obj_pacific, parallel = T) # Convert to genlight
