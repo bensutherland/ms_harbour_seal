@@ -292,9 +292,10 @@ file.copy(from = "03_results/pca_samples_PC3_v_PC4.pdf", to = "03_results/pca_sa
 
 ## FST
 calculate_FST(format = "genind", dat = obj_all, separated = FALSE, bootstrap = TRUE)
+file.copy(from = "03_results/gen_diff_wcfst_booted.csv", to = "03_results/gen_diff_wcfst_booted_all_pruned.csv", overwrite = TRUE)
 
 ## Dendrogram
-make_tree(boot_obj = obj, bootstrap = TRUE, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
+make_tree(boot_obj = obj_all, bootstrap = TRUE, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
 
 #### 0.4 Export ####
 # Write out object
