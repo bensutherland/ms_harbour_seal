@@ -45,7 +45,7 @@ myFreq.pac <- myFreq
 hwe_eval(data = obj_atlantic, alpha = 0.01)
 hwe_eval(data = obj_pacific, alpha = 0.01)
 
-# Which col contains pval? 
+# Which col contains the pval? 
 head(per_locus_hwe_NFL.df)
 col.oi <- grep(pattern = "Pr", x = colnames(per_locus_hwe_NFL.df))
 
@@ -82,13 +82,13 @@ print(paste0("Of these, there are ", length(markers_to_drop_pac), " unique marke
 
 ## Remove HWE outliers
 markers_to_keep_atl <- setdiff(x = locNames(obj_atlantic), y = markers_to_drop_atl)
-length(markers_to_keep_atl) # 3470 markers to keep
+length(markers_to_keep_atl) # 3454 markers to keep
 
 obj_atlantic <- obj_atlantic[, loc=markers_to_keep_atl]
 obj_atlantic
 
 markers_to_keep_pac <- setdiff(x = locNames(obj_pacific), y = markers_to_drop_pac)
-length(markers_to_keep_pac) # 3470 markers to keep
+length(markers_to_keep_pac) # 7979 markers to keep
 
 obj_pacific <- obj_pacific[, loc=markers_to_keep_pac]
 obj_pacific
@@ -120,12 +120,6 @@ length(keep_pac)
 obj_pacific <- obj_pacific[, loc=keep_pac] 
 obj_pacific
 
-
-# # Re-run per loc stats
-# per_locus_stats(data = obj_atlantic)
-# 
-# # Save for later
-# per_loc_stats_atl.df <- per_loc_stats.df
 
 ## Coast-specific PCA
 pca_from_genind(data = obj_atlantic
