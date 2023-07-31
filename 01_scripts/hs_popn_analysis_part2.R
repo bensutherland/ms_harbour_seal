@@ -95,11 +95,15 @@ obj_pacific
 
 
 ## Per locus statistics
+rm(date)
 per_locus_stats(data = obj_atlantic)
+date <- format(Sys.time(), "%Y-%m-%d")
 file.copy(from = paste0("03_results/per_locus_stats_", date, ".txt"), to = paste0("03_results/per_locus_stats_atl_", date, ".txt"), overwrite = T)
 per_loc_stats_atl.df <- per_loc_stats.df
 
+rm(date)
 per_locus_stats(data = obj_pacific)
+date <- format(Sys.time(), "%Y-%m-%d")
 file.copy(from = paste0("03_results/per_locus_stats_", date, ".txt"), to = paste0("03_results/per_locus_stats_pac_", date, ".txt"), overwrite = T)
 per_loc_stats_pac.df <- per_loc_stats.df
 
