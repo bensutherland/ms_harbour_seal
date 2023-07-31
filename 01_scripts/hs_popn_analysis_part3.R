@@ -8,6 +8,7 @@
 
 # Start by sourcing simple_pop_stats, then load the previous image
 load(file = "03_results/output_coast-sp_pruned_analysis.Rdata")
+rm(date) # Clear earlier date variable
 
 #### 01. Private alleles, pre-pruning (REMOVED) ####
 # ## Private Alleles, Burrard Inlet
@@ -85,6 +86,7 @@ myFreq_filt_SOG_vs_NBC <- myFreq
 
 # Calculate per-locus FST
 per_locus_stats(data = obj_pacific_filt)
+date <- format(Sys.time(), "%Y-%m-%d")
 file.copy(from = paste0("03_results/per_locus_stats_", date, ".txt"), to = paste0("03_results/per_locus_stats_SOG_vs_NBC_", date, ".txt"), overwrite = T)
 per_loc_stats_SOG_vs_NBC.df <- per_loc_stats.df
 
@@ -98,8 +100,10 @@ myFreq_filt_SOG_vs_ORE <- myFreq
 
 # Calculate per-locus FST
 per_locus_stats(data = obj_pacific_filt)
+date <- format(Sys.time(), "%Y-%m-%d")
 file.copy(from = paste0("03_results/per_locus_stats_", date, ".txt"), to = paste0("03_results/per_locus_stats_SOG_vs_ORE_", date, ".txt"), overwrite = T)
 per_loc_stats_SOG_vs_ORE.df <- per_loc_stats.df
+rm(date)
 
 
 #### 03. Identify top HOBS markers #### 
@@ -169,13 +173,16 @@ table(myFreq.pac < 0.1)
 table(myFreq.atl < 0.1)
 
 length(myFreq.pac)
-length(myFreq.atl) # TODO: double-check this
+length(myFreq.atl)
 
-table(myFreq.pac < 0.1)[2] / length(myFreq.pac) # 57.9% # new: 56.3%
-table(myFreq.atl < 0.1)[2] / length(myFreq.atl) # 47.9% # new: 46.5%
+table(myFreq.pac < 0.1)[2] / length(myFreq.pac) # 56.3%
+table(myFreq.atl < 0.1)[2] / length(myFreq.atl) # 46.5%
 
-table(myFreq.pac < 0.05)[2] / length(myFreq.pac) # 37.0% # new: 36.8%
-table(myFreq.atl < 0.05)[2] / length(myFreq.atl) # 31.0% # new: 29.4%
+table(myFreq.pac < 0.05)
+table(myFreq.atl < 0.05)
+
+table(myFreq.pac < 0.05)[2] / length(myFreq.pac) # 36.8%
+table(myFreq.atl < 0.05)[2] / length(myFreq.atl) # 29.4%
 
 
 # Plot
