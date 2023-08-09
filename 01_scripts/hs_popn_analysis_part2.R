@@ -32,13 +32,16 @@ strata.df$repunit <- strata.df$indiv.pop
 strata.df[which(indNames(obj.SOG) %in% outlier_samples.id), "repunit"] <- "Burrard"
 #strata.df[which(indNames(obj.SOG) %in% nonoutlier_samples.id), "repunit"] <- "Burrard" # haphazardly selected, for comparison
 
-# Confirms it works:
+# Confirm selection method works:
 indNames(obj.SOG)[which(indNames(obj.SOG) %in% outlier_samples.id)]
 
 # Add strat object to genind
 strata(obj.SOG) <- strata.df
 obj.SOG
 table(strata(obj.SOG))
+
+# Confirms the correct inds were labeled by the strata
+cbind(indNames(obj.SOG), strata(obj.SOG)) # compare with selected individual names above (i.e., outlier_samples.id or nonoutlier_samples.id)
 
 per_repunit.privallele <- private_alleles(obj.SOG, alleles ~ repunit)
 
