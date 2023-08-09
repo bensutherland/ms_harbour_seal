@@ -34,6 +34,9 @@ head(mean_cov.samples)
 # Add population variable
 mean_cov.samples$pop <- gsub(pattern = "_.*", replacement = "", x = mean_cov.samples$indiv)
 
+# Summarize average by group
+aggregate(x = mean_cov.samples$mean_cov.samples, list(mean_cov.samples$pop), FUN=mean)
+
 # Population averages
 # Plot per pop
 pdf(file = "03_results/mean_geno_depth_per_pop.pdf", width = 6.5, height = 4.5)
