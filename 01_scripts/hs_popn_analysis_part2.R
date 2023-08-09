@@ -11,63 +11,62 @@ load(file = "03_results/output_coast-sp_relatedness.Rdata")
 rm(date)
 
 #### 00. Inspect private alleles between Burrard outlier cluster and the rest of the SOG samples
-#### 01. Private alleles, pre-pruning (REMOVED) ####
-# ## Private Alleles, Burrard Inlet
-# # Create backup
-# #obj_pacific.bck <- obj_pacific 
-# #obj_pacific <- obj_pacific.bck
-# 
-# # Explore Burrard Inlet samples further to see if any private alleles are present
-# indNames(obj_pacific)
-# outlier_samples.id <- c("SOG_108", "SOG_131", "SOG_135", "SOG_115", "SOG_127", "SOG_141", "SOG_125", "SOG_136", "SOG_102")
-# nonoutlier_samples.id <- c("SOG_134", "SOG_114", " SOG_123", "SOG_124", "SOG_130", "SOG_117", "SOG_119", "SOG_129", "SOG_101") # haphazardly selected inds from non-Burrard group
-# 
-# # Keep only SOG
-# obj_pacific.sep <- seppop(obj_pacific)
-# obj.SOG <- obj_pacific.sep$SOG
-# 
-# # Create a df defining the strata for each individual
-# strata.df <- as.data.frame(as.character(pop(obj.SOG)), stringsAsFactors = F)
-# colnames(strata.df)[1] <- "indiv.pop"
-# head(strata.df)
-# 
-# # Add column 'repunit'
-# strata.df$repunit <- strata.df$indiv.pop
-# 
-# strata.df[which(indNames(obj.SOG) %in% outlier_samples.id), "repunit"] <- "Burrard"
-# #strata.df[which(indNames(obj.SOG) %in% nonoutlier_samples.id), "repunit"] <- "Burrard" # haphazardly selected, for comparison
-# 
-# # Confirms it works:
-# indNames(obj.SOG)[which(indNames(obj.SOG) %in% outlier_samples.id)]
-# 
-# # Add strat object to genind
-# strata(obj.SOG) <- strata.df
-# obj.SOG
-# table(strata(obj.SOG))
-# 
-# per_repunit.privallele <- private_alleles(obj.SOG, alleles ~ repunit)
-# 
-# #per_repunit.privallele[, 1:5]
-# dim(per_repunit.privallele)
-# 
-# table(per_repunit.privallele["SOG", ])
-# table(per_repunit.privallele["Burrard", ])
-# 
-# which(per_repunit.privallele["Burrard", ]==9)
-# which(per_repunit.privallele["Burrard", ]==6)
-# which(per_repunit.privallele["Burrard", ]==5)
-# 
-# 
-# # # Get raw number of private alleles per locus
-# # pal <- private_alleles(obj.SOG, locus ~ repunit, count.alleles = FALSE)
-# # table(pal) # this only gives a 0 or 1, does not count alleles, allows one to see exact how many private alleles exist
-# # # per repunit
-# # # This shows the number of rows that have a private allele
-# # rowSums(pal)
-# 
-# 
-# #save.image(file = "03_results/output_coast-sp_pruned_analysis.Rdata")
+## Private Alleles, Burrard Inlet
+# Explore Burrard Inlet samples further to see if any private alleles are present
+indNames(obj_pacific)
+outlier_samples.id <- c("SOG_108", "SOG_131", "SOG_135", "SOG_115", "SOG_127", "SOG_141", "SOG_125", "SOG_136", "SOG_102")
+nonoutlier_samples.id <- c("SOG_134", "SOG_114", " SOG_123", "SOG_124", "SOG_130", "SOG_117", "SOG_119", "SOG_129", "SOG_101") # haphazardly selected inds from non-Burrard group
 
+# Keep only SOG
+obj_pacific.sep <- seppop(obj_pacific)
+obj.SOG <- obj_pacific.sep$SOG
+
+# Create a df defining the strata for each individual
+strata.df <- as.data.frame(as.character(pop(obj.SOG)), stringsAsFactors = F)
+colnames(strata.df)[1] <- "indiv.pop"
+head(strata.df)
+
+# Add column 'repunit'
+strata.df$repunit <- strata.df$indiv.pop
+
+strata.df[which(indNames(obj.SOG) %in% outlier_samples.id), "repunit"] <- "Burrard"
+#strata.df[which(indNames(obj.SOG) %in% nonoutlier_samples.id), "repunit"] <- "Burrard" # haphazardly selected, for comparison
+
+# Confirms it works:
+indNames(obj.SOG)[which(indNames(obj.SOG) %in% outlier_samples.id)]
+
+# Add strat object to genind
+strata(obj.SOG) <- strata.df
+obj.SOG
+table(strata(obj.SOG))
+
+per_repunit.privallele <- private_alleles(obj.SOG, alleles ~ repunit)
+
+#per_repunit.privallele[, 1:5]
+dim(per_repunit.privallele)
+
+table(per_repunit.privallele["SOG", ])
+table(per_repunit.privallele["Burrard", ])
+
+which(per_repunit.privallele["Burrard", ]==9)
+per_repunit.privallele[,1991]
+myFreq.pac[which(names(myFreq.pac)=="586731_19")] # What was the MAF of this variant? 0.046875
+obj_pacific # how many inds?
+# 97 * 2 = 194; 9 / 194 = 0.04639175 (remember, this assumes no missing data); so this is actually the number of views, not the number of inds
+obj_pacific[loc="586731_19"]$tab # observe the counts of the geno
+
+which(per_repunit.privallele["Burrard", ]==6)
+which(per_repunit.privallele["Burrard", ]==5)
+which(per_repunit.privallele["Burrard", ]==4)
+
+
+# Get raw number of private alleles per locus
+#pal <- private_alleles(obj.SOG, locus ~ repunit, count.alleles = FALSE) # Note: runs slow
+table(pal) # this only gives a 0 or 1, does not count alleles, allows one to see exact how many private alleles exist per repunit
+# This shows the number of rows that have a private allele
+rowSums(pal) # n = 2289 in SOG, 190 in Burrard
+
+save.image(file = "03_results/private_allele_analysis.Rdata")
 
 
 #### 01. Remove relatedness outliers ####
