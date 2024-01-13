@@ -8,4 +8,11 @@
 *.xml
 *.pdf
 *.xlsx
+*.bim
+*.fam
+*.P
+*.Q
+*.bed
+.DS_Store
+
 
