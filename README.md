@@ -168,7 +168,7 @@ mv 05-stacks/populations* 05-stacks/popn_out_single_snp/
 ### Data setup
 Change directory into `simple_pop_stats`.      
 
-Copy in the harbour seal colour file:       
+Copy in the colour file included with the harbour seal repo:       
 `cp ../ms_harbour_seal/00_archive/harbour_seal_pops_colours.csv ./00_archive`       
 
 Copy in the single-variant per-locus genepop:       
@@ -177,12 +177,14 @@ Copy in the single-variant per-locus genepop:
 Rename your file
 `bhs_p<X>_r<0.X>_maf<0.0X>_20<XX-XX-XX>.gen` (note: customize as per true values for variables)         
 
-Copy in the multiple SNP per locus VCF (for individual inbreeding stat):      
+Optional: copy in the multiple SNP per locus VCF (for individual inbreeding stat):      
 `cp 05-stacks/popn_out_mhaps/populations.snps.vcf ../ms_harbour_seal/02_input_data/populations.snps_multi_per_locus.vcf`      
 
 
 ### Analysis
-Analyze via `ms_harbour_seal/01_scripts/hs_popn_analysis.R`     
+Analyze via `ms_harbour_seal/01_scripts/hs_popn_analysis_part1.R`, `*_part2.R` and `*_part3.R` sequentially.      
+
+Note: if analyzing full dataset, make sure that the variable in the top of the first script is `dataset <- "all"` (default) instead of 'balanced'. The balanced dataset is to evaluate effect of sample size and read depth.     
 
 In brief, this analysis will:       
 1. Load data from the genepop; 
@@ -369,4 +371,65 @@ source activate my-conda-env
 conda install -c bioconda -c conda-forge multiqc
 # then run your multiqc commands with your conda env active
 ```
+
+
+### Admixture analysis ###
+Change directory into `ms_harbour_seal` (this repository).    
+
+Get the original single-SNP per locus VCF file output by Stacks2 populations module:     
+`cp ../stacks_workflow_2023-02-27/05-stacks/popn_out_single_snp/populations.snps.vcf ./02_input_data/`       
+i
+
+As part of the population analysis, whitelists were made for individuals and loci for the Pacific, Atlantic, and both coasts together. Copy these whitelists into the admixture folder:    
+`cp ../simple_pop_stats/03_results/*whitelist* 05_admixture/`     
+
+
+#### Prepare the input files for admixture
+Subset the input VCF to only contain the target individuals and loci for each of the three datasets:     
+
+```
+# Subset individuals
+bcftools view -S 05_admixture/both_coasts_whitelist_inds.txt 02_input_data/populations.snps.vcf -Ov -o 05_admixture/populations.snps_filt_inds.vcf
+
+# (Optional) view the inds remaining: 
+bcftools query -l 05_admixture/populations.snps_filt_inds.vcf | wc -l
+
+# Prepare a bed file to subset SNPs by using the following Rscript interactively:   
+#  note: select which dataset is the goal
+01_scripts/generate_ranges_file.R
+#  note: this will output 05_admixture/*whitelist_loci_bed.txt
+
+# Subset loci
+intersectBed -a 05_admixture/populations.snps_filt_inds.vcf -b 05_admixture/both_coasts_whitelist_loci_bed.txt -header > 05_admixture/populations.snps_filt_inds_loci.vcf
+
+# Convert to plink format
+~/programs/plink2 --make-bed --vcf 05_admixture/populations.snps_filt_inds_loci.vcf --allow-no-sex --no-sex --no-parents --no-fid --no-pheno --allow-extra-chr --out 05_admixture/pvit_all
+
+# Fix chr names issue
+awk '{$1=0;print $0}' 05_admixture/pvit_all.bim > 05_admixture/pvit_all_fixed.bim
+#awk '{$1=0;print $0}' 02_input_data/harbour_seal.bim > 02_input_data/harbour_seal_rem_chr.bim
+
+# Overwrite
+mv 05_admixture/pvit_all_fixed.bim 05_admixture/pvit_all.bim
+
+```
+
+#### Run admixture analysis
+
+```
+# Change into admixture directory
+cd 05_admixture
+
+# Run admixture to evaluate if everything is working with a single k:     
+#admixture --cv 02_input_data/harbour_seal.bed 5 | tee 02_input_data/admixture_out.log
+
+# Run in a loop with multiple k to test out different k levels:      
+for K in 1 2 3 4 5 6 7 8; do admixture --cv pvit_all.bed $K | tee pvit_all_log${K}.out; done 
+
+```
+
+Interactively use `01_scripts/admixture.R` to plot output.    
+note: will need the GPS coordinate file.   
+
+Copy `additional_file_s1_sample_metadata_2023-05-11.xlsx` from the additional files to `02_input_data`. Open it and save as a tab-delimited text file, of the same name but with the .txt suffix.  This will be used by the plotting script above.       
 
