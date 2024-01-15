@@ -6,12 +6,17 @@
 # Clear space
 # rm(list=ls())
 
+# Load libraries
+#install.packages("ggpubr")
+library(ggpubr)
+
+
 # Start by sourcing simple_pop_stats, then load the previous image
 load(file = "03_results/output_coast-sp_pruned_analysis.Rdata")
 rm(date) # Clear earlier date variable
 
 
-#### 02. Identify top FST markers ####
+#### 01. Identify top FST markers ####
 # Calculate FST for SOG vs. NBC and SOG vs. ORE
 obj_pacific_filt.sep <- seppop(x = obj_pacific) 
 
@@ -45,7 +50,7 @@ per_loc_stats_SOG_vs_ORE.df <- per_loc_stats.df
 rm(date)
 
 
-#### 03. Identify top HOBS markers #### 
+#### 02. Identify top HOBS markers #### 
 # Calculate per-locus HOBS for BC or US pops separately
 names(obj_pacific_filt.sep)
 
@@ -64,7 +69,7 @@ per_locus_stats(data = obj)
 per_loc_stats_US.df <- per_loc_stats.df
 
 
-#### 04. Combine population or region-sp data ####
+#### 03. Combine population or region-sp data ####
 head(per_loc_stats_SOG_vs_ORE.df)
 head(per_loc_stats_SOG_vs_NBC.df)
 
@@ -102,7 +107,7 @@ plot(x = BC_and_US_sp_HOBS.df$Hobs.BC, y = BC_and_US_sp_HOBS.df$Hobs.US
 dev.off()
 
 
-### 06. Multi-coast plotting ####
+### 04. Multi-coast plotting ####
 ## MAF
 # Remove the HWE-filtered variants
 myFreq.pac <- myFreq.pac[names(myFreq.pac) %in% locNames(obj_pacific)]
@@ -164,8 +169,16 @@ write.table(x = myFreq.atl, file = "03_results/allele_freq_retained_loci_atl.txt
 )
 
 
-##### 07. Final population analyses ####
-# Go back to original genepop
+#### 05. Final population analyses ###
+# Reload original genepop
+load_genepop(datatype = "SNP")
+
+## file sources: 
+# all populations, here:  "02_input_data/bhs_p7_r0.7_maf0.01_2023-02-28.gen"
+
+# Clean up pop names
+pop(obj) <- gsub(pattern = "_.*", replacement = "", x = pop(obj))
+unique(pop(obj))
 obj
 
 ## Remove related individuals (previously identified)
@@ -223,7 +236,7 @@ obj_all
 pca_from_genind(data = obj_all
                 , PCs_ret = 4
                 , plot_eigen = TRUE
-                , plot_allele_loadings = TRUE
+                , plot_allele_loadings = FALSE
                 , retain_pca_obj = TRUE
                 , colour_file = "00_archive/harbour_seal_pops_colours.csv"
 )
@@ -236,12 +249,92 @@ write.csv(x = pca_scores_result, file = "03_results/pca_scores_result_all_pruned
 file.copy(from = "03_results/pca_samples_PC1_v_PC2.pdf", to = "03_results/pca_samples_PC1_v_PC2_all_pruned.pdf", overwrite = TRUE)
 file.copy(from = "03_results/pca_samples_PC3_v_PC4.pdf", to = "03_results/pca_samples_PC3_v_PC4_all_pruned.pdf", overwrite = TRUE)
 
+# Save out pca plots
+all_pc1_v_pc2.plot <- pc1_v_pc2.plot # Use this one for the future
+all_pc3_v_pc4.plot <- pc3_v_pc4.plot
+
+# Plot final figure, with Pacific, Atlantic, and both coasts all in one PCA
+final_fig <- ggarrange(all_pc1_v_pc2.plot,                                 # First row with all samples
+                       ggarrange(pac_pc1_v_pc2.plot, atl_pc1_v_pc2.plot, ncol = 2, labels = c("B", "C")), # Second row with box and dot plots
+                       nrow = 2, 
+                       labels = "A"                                        # Labels of the scatter plot
+) 
+
+final_fig
+# note: can update the linetype if we'd like to
+
+pdf(file = "03_results/PCA_multipanel_sibs_purged.pdf", width = 9.3, height = 6.9)
+print(final_fig)
+dev.off()
+
 ## FST
 calculate_FST(format = "genind", dat = obj_all, separated = FALSE, bootstrap = TRUE)
 file.copy(from = "03_results/gen_diff_wcfst_booted.csv", to = "03_results/gen_diff_wcfst_booted_all_pruned.csv", overwrite = TRUE)
 
 ## Dendrogram
 make_tree(boot_obj = obj_all, bootstrap = TRUE, nboots = 10000, dist_metric = "edwards.dist", separated = FALSE)
+
+# Export final coastwide datasets as Admixture output
+obj_pacific  # n = 73 inds, 7,699 loci
+obj_atlantic # n = 33 inds, 3,134 loci
+
+obj_pacific.gl  <- gi2gl(gi = obj_pacific)
+obj_atlantic.gl <- gi2gl(gi = obj_atlantic)
+
+obj_pacific.gl$chromosome <- as.factor("1") # assign dummy name for chr
+gl2plink(obj_pacific.gl)
+gl2plink(x = obj_pacific.gl, bed_file = FALSE, outfile = "obj_pacific_plink"
+         , outpath = "03_results/")
+
+gl2eigenstrat(x = obj_pacific.gl, outfile = "pacific_eigenstrat", outpath = "03_results/")
+gl2eigenstrat(x = obj_atlantic.gl, outfile = "atlantic_eigenstrat", outpath = "03_results/")
+
+## Save out the names of the individuals and loci for each coast-specific dataset
+# Pacific
+pacific_whitelist_loci.vec <- locNames(obj_pacific)
+pacific_whitelist_inds.vec <- indNames(obj_pacific)
+length(pacific_whitelist_loci.vec)
+length(pacific_whitelist_inds.vec)
+
+write.table(x = pacific_whitelist_loci.vec, file = "03_results/pacific_whitelist_loci.txt"
+            , quote = F, sep = "\t", row.names = F, col.names = F
+)
+
+write.table(x = pacific_whitelist_inds.vec, file = "03_results/pacific_whitelist_inds.txt"
+            , quote = F, sep = "\t", row.names = F, col.names = F
+)
+
+# Atlantic
+atlantic_whitelist_loci.vec <- locNames(obj_atlantic)
+atlantic_whitelist_inds.vec <- indNames(obj_atlantic)
+length(atlantic_whitelist_loci.vec)
+length(atlantic_whitelist_inds.vec)
+
+write.table(x = atlantic_whitelist_loci.vec, file = "03_results/atlantic_whitelist_loci.txt"
+            , quote = F, sep = "\t", row.names = F, col.names = F
+)
+
+write.table(x = atlantic_whitelist_inds.vec, file = "03_results/atlantic_whitelist_inds.txt"
+            , quote = F, sep = "\t", row.names = F, col.names = F
+)
+
+
+
+# Save out the names of the individuals and loci for each coast-specific dataset
+both_coast_whitelist_loci.vec <- locNames(obj_all)
+length(both_coast_whitelist_loci.vec) # 9,152
+both_coast_whitelist_inds.vec <- indNames(obj_all)
+length(both_coast_whitelist_inds.vec) #   106
+
+write.table(x = both_coast_whitelist_loci.vec, file = "03_results/both_coasts_whitelist_loci.txt"
+            , quote = F, sep = "\t", row.names = F, col.names = F
+            )
+
+write.table(x = both_coast_whitelist_inds.vec, file = "03_results/both_coasts_whitelist_inds.txt"
+            , quote = F, sep = "\t", row.names = F, col.names = F
+)
+
+
 
 #### 0.4 Export ####
 # Write out object
