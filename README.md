@@ -426,6 +426,11 @@ cd 05_admixture
 # Run in a loop with multiple k to test out different k levels:      
 for K in 1 2 3 4 5 6 7 8; do admixture --cv pvit_all.bed $K | tee pvit_all_log${K}.out; done 
 
+# View cv results
+less pvit_all_log
+
+# Collect CV error results into a file
+cat 05_admixture/pvit_all_log* | grep 'CV error' > 05_admixture/pvit_all_CV_error.txt
 ```
 
 Interactively use `01_scripts/admixture.R` to plot output.    
