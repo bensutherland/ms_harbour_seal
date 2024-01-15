@@ -65,9 +65,9 @@ which(per_repunit.privallele["Burrard", ]==4)
 
 # Get raw number of private alleles per locus
 #pal <- private_alleles(obj.SOG, locus ~ repunit, count.alleles = FALSE) # Note: runs slow
-table(pal) # this only gives a 0 or 1, does not count alleles, allows one to see exact how many private alleles exist per repunit
+#table(pal) # this only gives a 0 or 1, does not count alleles, allows one to see exact how many private alleles exist per repunit
 # This shows the number of rows that have a private allele
-rowSums(pal) # n = 2289 in SOG, 190 in Burrard
+#rowSums(pal) # n = 2289 in SOG, 190 in Burrard
 
 save.image(file = "03_results/private_allele_analysis.Rdata")
 
@@ -192,10 +192,13 @@ obj_pacific
 pca_from_genind(data = obj_atlantic
                 , PCs_ret = 4
                 , plot_eigen = TRUE
-                , plot_allele_loadings = TRUE
+                , plot_allele_loadings = FALSE
                 , retain_pca_obj = TRUE
                 , colour_file = "00_archive/harbour_seal_pops_colours.csv"
 )
+
+atl_pc1_v_pc2.plot <- pc1_v_pc2.plot # Use this one for the future
+atl_pc3_v_pc4.plot <- pc3_v_pc4.plot
 
 
 # Rename so the PCA figures are not overwritten
@@ -206,14 +209,18 @@ file.copy(from = "03_results/pca_samples_PC3_v_PC4.pdf", to = "03_results/pca_sa
 pca_scores_result <- pca.obj$scores
 write.csv(x = pca_scores_result, file = "03_results/pca_scores_result_atlantic_pruned.csv", quote = F, row.names = T)
 
-
+# Pacific
 pca_from_genind(data = obj_pacific
                 , PCs_ret = 4
                 , plot_eigen = TRUE
-                , plot_allele_loadings = TRUE
+                , plot_allele_loadings = FALSE
                 , retain_pca_obj = TRUE
                 , colour_file = "00_archive/harbour_seal_pops_colours.csv"
+                , outline_samples = TRUE
 )
+
+pac_pc1_v_pc2.plot <- pc1_v_pc2.plot # Use this one for the future
+pac_pc3_v_pc4.plot <- pc3_v_pc4.plot
 
 
 # Rename so the PCA figures are not overwritten
