@@ -21,6 +21,7 @@ all_dataset <- "pvit_all"
 pac_dataset <- "pvit_pac"
 atl_dataset <- "pvit_atl"
 
+# Choose which dataset to use
 dataset <- all_dataset
 
 k.list <- list()
@@ -64,14 +65,35 @@ CV_error.df <- read.table(file = CV_error.FN, sep = ",")
 CV_error.df
 CV_error.df <- head(CV_error.df, n = k.list[[dataset]])
 
+# Set cols
+k1_col <- c("darkorchid3")
+k2_col <- c("darkorchid3", "darkorange")
+k3_col <- c("yellow", "darkorchid3", "darkorange")
+k4_col <- c("darkorange", "darkorchid3",  "green", "yellow")
+k5_col <- c("darkorange", "darkorchid3",  "green", "yellow", "black")
+
+colour.list <- list()
+colour.list[[1]] <- k1_col
+colour.list[[2]] <- k2_col
+colour.list[[3]] <- k3_col
+colour.list[[4]] <- k4_col
+colour.list[[5]] <- k5_col
+
+
+
+
+#k_colours <- c("darkorange", "darkorchid3","green", "yellow")
+
+
+length(tbl.list)
 # Plot
 pdf(file = paste0("05_admixture/", dataset, "_multi_k_admixture_plot.pdf")
     , width = 7.5, height = 12)
 par(mfrow = c(k.list[[dataset]], 1)) # number of plots match k
-for(i in 1:length(tbl.list)){
+for(i in 1:5){
   
   barplot(t(as.matrix(tbl.list[[i]]))
-          , col=rainbow(5)
+          , col=colour.list[[i]]
           , xlab="Individual #", ylab="Ancestry"
           , border=NA
           , las = 2
