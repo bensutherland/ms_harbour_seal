@@ -15,4 +15,5 @@
 *.bed
 .DS_Store
 *.zip
+.Rhistory
 
